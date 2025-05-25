@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> الذكاء الاصطناعي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splinetool/runtime@0.9.416/build/spline-runtime.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00f7ff;
+            --secondary-color: #6c63ff;
+            --dark-bg: #0a0a1a;
+            --darker-bg: #050510;
+            --text-color: #e0e0e0;
+            --accent-color: #ff4d8d;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* تنسيق الشريط العلوي */
+        .navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1000;
+            background: rgba(5, 5, 16, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+        }
+
+        .logo {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* تنسيق القسم الرئيسي */
+        .hero {
+            min-height: 100vh;
+            padding-top: 5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, var(--darker-bg) 0%, var(--dark-bg) 100%);
+        }
+
+        .model-container {
+            width: 100%;
+            height: 300px;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(10, 10, 26, 0.8);
+            border: 1px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, var(--primary-color), transparent 70%);
+            top: -25%;
+            left: -25%;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) rotate3d(1, 1, 0, 5deg);
+            box-shadow: 
+                0 10px 20px rgba(0, 247, 255, 0.2),
+                0 0 30px rgba(0, 247, 255, 0.1) inset;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .feature-card:hover::after {
+            opacity: 0.05;
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            position: relative;
+            margin: 0 auto 1rem;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 0 20px var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        .feature-icon i {
+            position: relative;
+            z-index: 1;
+            font-size: 2rem;
+            color: var(--text-color);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--darker-bg);
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) translateY(-10px);
+        }
+
+        .feature-card:hover .feature-icon i {
+            transform: rotateY(360deg);
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+                transform: scale(0.95);
+            }
+            70% {
+                opacity: 0.75;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0.5;
+                transform: scale(0.95);
+            }
+        }
+
+        .feature-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .hero-content {
+            padding: 2rem;
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        /* تنسيق الأزرار */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--darker-bg);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 247, 255, 0.2);
+        }
+
+        /* تنسيق البطاقات */
+        .cards-section {
+            padding: 4rem 1rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 247, 255, 0.1);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0, 247, 255, 0.1);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* تنسيقات خاصة بالهواتف */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* تأثيرات إضافية */
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.1;
+            animation: glow 10s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(50px, 50px); }
+        }
+
+        #future-3d-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <h1>3D AI VR/AR Deep Learning</h1>
+            <p>منصة متكاملة تجمع بين التعلم العميق والذكاء الاصطناعي مع تقنيات الواقع المعزز والافتراضي</p>
+        </div>
+
+        <div class="model-container">
+            <canvas id="canvas3d"></canvas>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h3 class="feature-title">التعلم العميق المتقدم</h3>
+                <p>خوارزميات التعلم العميق للتعرف على الأنماط وتحليل البيانات ثلاثية الأبعاد بدقة عالية</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-vr-cardboard"></i>
+                </div>
+                <h3 class="feature-title">الواقع الافتراضي المعزز</h3>
+                <p>تجربة غامرة مع تقنيات VR/AR المتقدمة وتفاعل ثلاثي الأبعاد في الوقت الحقيقي</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <h3 class="feature-title">نمذجة ثلاثية الأبعاد</h3>
+                <p>نماذج ثلاثية الأبعاد متقدمة مع تحريك ذكي للكائنات باستخدام تقنيات الذكاء الاصطناعي</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3 class="feature-title">شبكات عصبية عميقة</h3>
+                <p>معالجة متقدمة للصور والنماذج ثلاثية الأبعاد باستخدام الشبكات العصبية العميقة</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إعداد المشهد ثلاثي الأبعاد
+        const canvas = document.getElementById('canvas3d');
+        const app = new window.SPLINE.Application(canvas);
+        app.load('https://prod.spline.design/6Wq1Q7YGyM-iXzZN/scene.splinecode')
+            .then(() => {
+                console.log('Scene loaded');
+            })
+            .catch(console.error);
+    </script>
+    <!-- شريط التنقل -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-cube fa-spin"></i>
+            AI
+        </a>
+        <i class="fas fa-robot"></i>
+        مستقبل الذكاء الاصطناعي
+    </nav>
+
+    <!-- القسم الرئيسي -->
+    <section class="hero">
+        <div class="glow"></div>
+        <div class="hero-content">
+            <h1>اكتشف  الذكاء الاصطناعي</h1>
+            <p>تعرف على أحدث التطورات في عالم الذكاء الاصطناعي وكيف يمكنك الاستفادة منها في مشاريعك المستقبلية</p>
+            <div class="hero-buttons">
+                <a href="#cards" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    ابدأ الرحلة
+                </a>
+                <a href="#contact" class="btn btn-outline">
+                    <i class="fas fa-paper-plane"></i>
+                    تواصل معنا
+                </a>
+            </div>
+        </div>
+        <div id="future-3d-container"></div>
+    </section>
+
+    <!-- قسم البطاقات -->
+    <section id="cards" class="cards-section">
+        <div class="cards-grid" id="ai-cards-container">
+            <!-- سيتم إضافة البطاقات ديناميكياً -->
+        </div>
+    </section>
+
+    <!-- تذييل الصفحة -->
+    <footer id="contact" style="background: var(--darker-bg); padding: 3rem 2rem; text-align: center; border-top: 1px solid rgba(0, 247, 255, 0.1);">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.8rem;">تواصل معنا</h2>
+            
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border: 1px solid rgba(0, 247, 255, 0.1);">
+                <a href="mailto:mcharymop123@gmail.com" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--primary-color);
+                    text-decoration: none;
+                    font-size: 1.2rem;
+                    transition: all 0.3s ease;
+                ">
+                    <i class="fas fa-envelope" style="font-size: 1.5rem;"></i>
+                    mcharymop123@gmail.com
+                </a>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <p style="color: var(--text-color); opacity: 0.8;"></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- السكريبت الرئيسي -->
+    <script src="js/main.js"></script>
+</body>
+</html>

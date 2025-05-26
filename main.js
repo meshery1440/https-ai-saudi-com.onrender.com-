@@ -612,9 +612,95 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // إضافة تأثيرات الزر السائل
+    // إضافة تأثيرات الزر السائل وربطها بالنوافذ المنبثقة
     document.querySelectorAll('.liquid-button').forEach(button => {
-        new LiquidButtonEffect(button);
+        const liquidEffect = new LiquidButtonEffect(button);
+        
+        // إضافة وظيفة فتح النافذة المنبثقة المناسبة
+        button.addEventListener('click', function() {
+            // تحديد النافذة المنبثقة المناسبة بناءً على البطاقة الأم
+            const card = this.closest('.feature-card');
+            const iconElement = card.querySelector('.feature-icon i');
+            let modalId = '';
+            
+            // تحديد النافذة المنبثقة بناءً على نوع الأيقونة
+            if (iconElement.classList.contains('fa-microchip')) {
+                modalId = 'modal-deep-learning';
+            } else if (iconElement.classList.contains('fa-vr-cardboard')) {
+                modalId = 'modal-vr-ar';
+            } else if (iconElement.classList.contains('fa-cube')) {
+                modalId = 'modal-3d-modeling';
+            } else if (iconElement.classList.contains('fa-network-wired')) {
+                modalId = 'modal-neural-networks';
+            }
+            
+            // فتح النافذة المنبثقة
+            if (modalId) {
+                openModal(modalId);
+            }
+        });
+    });
+    
+    // إضافة وظائف النوافذ المنبثقة
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+        
+        // إضافة تأثير الجسيمات عند فتح النافذة
+        const featureImage = modal.querySelector('.feature-image');
+        if (featureImage) {
+            effectEngine.addEffect(new ParticleEffect(featureImage, {
+                count: 30,
+                duration: 2,
+                minSpeed: 20,
+                maxSpeed: 80,
+                gravity: 10,
+                colors: ['var(--primary-color)', 'var(--secondary-color)', '#ffffff']
+            }));
+        }
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // إعادة تمكين التمرير
+    }
+    
+    // إضافة مستمعي أحداث لأزرار الإغلاق
+    document.querySelectorAll('.modal-close').forEach(closeButton => {
+        closeButton.addEventListener('click', function() {
+            const modal = this.closest('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+    
+    // إغلاق النافذة عند النقر خارج المحتوى
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+    
+    // إضافة مستمع لمفتاح Escape لإغلاق النافذة المنبثقة
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const activeModal = document.querySelector('.modal-overlay.active');
+            if (activeModal) {
+                activeModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
     });
 
     // إضافة البطاقات

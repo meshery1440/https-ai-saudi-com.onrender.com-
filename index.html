@@ -1,0 +1,3229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الذكاء الاصطناعي - رؤية تفاعلية ثلاثية الأبعاد</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        /* تعريفات الحركات */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(10px); }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* تنسيقات النماذج ثلاثية الأبعاد */
+        .interactive-3d-section {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .controls-panel {
+            transition: all 0.3s ease;
+        }
+        
+        .controls-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .model-container {
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .model-container:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .color-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .color-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        /* تنسيقات الهاتف المحمول */
+        @media (max-width: 768px) {
+            .interactive-3d-section .container > div {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .model-container {
+                height: 400px !important;
+            }
+        }
+        
+        :root {
+            --primary-color: #00f7ff;
+            --secondary-color: #6c63ff;
+            --dark-bg: #0a0a1a;
+            --darker-bg: #050510;
+            --text-color: #e0e0e0;
+            --accent-color: #ff4d8d;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: var(--dark-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* شريط التنقل العلوي */
+        .navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover:after,
+        .nav-links a.active:after {
+            width: 100%;
+            left: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            outline: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--darker-bg);
+        }
+
+        .btn-primary:hover {
+            background: #00e5ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 247, 255, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 247, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* قسم البطل */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 10%;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+        }
+
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+            margin-top: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .hero-image {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-30%, -50%);
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            right: 0;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(40px);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(20px, 20px) rotate(5deg); }
+            50% { transform: translate(0, 40px) rotate(0deg); }
+            75% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+
+        /* تنسيقات متجاوبة */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 120px;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .hero-content {
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-image {
+                position: relative;
+                left: 0;
+                top: 0;
+                transform: none;
+                width: 100%;
+                height: 500px;
+                margin-top: 2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            #info {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+                max-height: 60vh;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 0.9rem;
+            }
+            
+            .nav-buttons {
+                display: none;
+            }
+        }
+
+        /* لوحة المعلومات */
+        #info {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            width: 350px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: rgba(10, 20, 30, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            border-right: 4px solid var(--primary-color);
+            z-index: 100;
+            display: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transform: translateX(20px);
+            opacity: 0;
+        }
+        
+        #info h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        #info h3 {
+            color: var(--primary-color);
+            margin: 15px 0 10px 0;
+            font-size: 1.2em;
+        }
+        
+        #info p, #info li {
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        #info ul {
+            padding-right: 20px;
+            margin: 10px 0;
+        }
+        
+        #info li {
+            margin-bottom: 5px;
+            position: relative;
+        }
+        
+        #info li:before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            display: inline-block; 
+            width: 1em;
+            margin-right: 5px;
+        }
+        
+        /* شاشة التحميل */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 247, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* تأثيرات النص */
+        .highlight {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- شريط التنقل العلوي -->
+    <nav class="navbar">
+    <a href="#" class="logo">
+        <i class="fas fa-robot"></i>
+        <span>AI Vision</span>
+    </a>
+    <!-- زر الانتقال إلى صفحة استكشاف الذكاء الاصطناعي العصبي -->
+    <a href="/neural_ai" class="btn btn-primary" style="margin-right: 24px; font-size: 1.1rem; border-radius: 25px; background: linear-gradient(90deg,#00f7ff,#6c63ff); color: #23243a; font-weight: bold; box-shadow: 0 2px 12px rgba(0,247,255,0.10);">
+        <i class="fas fa-brain"></i> استكشاف الذكاء العصبي
+    </a>
+
+        <div class="nav-links">
+            <a href="#" class="active">الرئيسية</a>
+            <a href="#features">المميزات</a>
+            <a href="#about">حول المشروع</a>
+            <a href="/ai_report">تقرير الذكاء الاصطناعي</a>
+        </div>
+        
+        <div class="nav-buttons">
+            <a href="#contact" class="btn btn-outline">اتصل بنا</a>
+            <a href="#start" class="btn btn-primary">ابدأ الآن</a>
+        </div>
+    </nav>
+
+    <!-- قسم البطل -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>استكشف عالم <span class="gradient-text">الذكاء الاصطناعي</span></h1>
+            <p>اكتشف أحدث تقنيات الذكاء الاصطناعي وتعلم كيف تُشكل مستقبل التكنولوجيا. تصفح النماذج المتقدمة وتعرف على تطبيقاتها في مختلف المجالات.</p>
+            <div class="hero-buttons">
+                <a href="#explore" class="btn btn-primary">
+                    <i class="fas fa-compass"></i>
+                    استكشف الآن
+                </a>
+                <a href="#learn" class="btn btn-outline">
+                    <i class="fas fa-book"></i>
+                    تعلم المزيد
+                </a>
+            </div>
+        </div>
+        
+        <div class="hero-image">
+            <div id="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="floating-elements">
+                <div class="floating-element" style="width: 300px; height: 300px; background: var(--primary-color); top: 10%; right: 10%; animation-delay: 0s;"></div>
+                <div class="floating-element" style="width: 200px; height: 200px; background: var(--secondary-color); bottom: 10%; left: 10%; animation-delay: 2s;"></div>
+                <div class="floating-element" style="width: 150px; height: 150px; background: var(--accent-color); top: 50%; left: 20%; animation-delay: 4s;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>جاري تحميل التطبيق...</p>
+    </div>
+    
+    <!-- لوحة المعلومات -->
+    <div id="info">
+        <h2 id="info-title">مرحباً بك</h2>
+        <p id="info-description">انقر على أي عنصر لمعرفة المزيد عنه</p>
+        <div id="info-details"></div>
+    </div>
+
+    <script>
+        'use strict';
+        
+        // التحقق من توفر المكتبات المطلوبة
+        if (typeof THREE === 'undefined') {
+            console.error('Three.js library is not loaded');
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: white; font-family: Arial, sans-serif;">
+                    <h2 style="color: #ff6b6b;">خطأ في تحميل المكتبات المطلوبة</h2>
+                    <p>يبدو أن هناك مشكلة في تحميل مكتبة Three.js. يرجى التأكد من اتصالك بالإنترنت وتحديث الصفحة.</p>
+                    <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #00a8ff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        إعادة تحميل الصفحة
+                    </button>
+                </div>
+            `;
+        }
+        
+        // المتغيرات العامة
+        let scene, camera, renderer, controls;
+        let model, particles = [];
+        let isRotating = true;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let targetRotation = { x: 0, y: 0 };
+        let currentRotation = { x: 0, y: 0 };
+        let isHovered = false;
+        
+        // تهيئة المشهد
+        function init() {
+            try {
+                // إنشاء المشهد
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x0a0e17);
+                
+                // إنشاء الكاميرا
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+                
+                // إنشاء العارض
+                const canvas = document.getElementById('interactive-3d');
+                renderer = new THREE.WebGLRenderer({
+                    canvas,
+                    antialias: true,
+                    alpha: true
+                });
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                
+                // إضافة الإضاءة
+                setupLights();
+                
+                // إنشاء النموذج
+                createModel('brain');
+                
+                // إضافة عناصر التحكم
+                setupControls();
+                
+                // إضافة مستمعات الأحداث
+                setupEventListeners();
+                
+                // بدء التحريك
+                animate();
+                
+                // إخفاء شاشة التحميل
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+                
+                console.log('تم تهيئة المشهد بنجاح');
+            } catch (error) {
+                console.error('فشل في تهيئة المشهد:', error);
+                showError('فشل في تهيئة المشهد', error);
+            }
+        }
+        
+        // إعداد الإضاءة
+        function setupLights() {
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            const hemisphereLight = new THREE.HemisphereLight(0x00a8ff, 0xff6b6b, 0.6);
+            scene.add(hemisphereLight);
+        }
+        
+        // إنشاء النموذج
+        function createModel(type) {
+            // إزالة النموذج الحالي إذا كان موجودًا
+            if (model) {
+                scene.remove(model);
+            }
+            
+            let geometry;
+            
+            switch(type) {
+                case 'brain':
+                    geometry = new THREE.SphereGeometry(1.5, 32, 32);
+                    break;
+                case 'neural':
+                    geometry = createNeuralNetworkGeometry();
+                    break;
+                case 'particles':
+                    createParticles();
+                    return;
+                case 'dna':
+                    geometry = createDNAGeometry();
+                    break;
+                default:
+                    geometry = new THREE.BoxGeometry(1, 1, 1);
+            }
+            
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x00a8ff,
+                emissive: 0x072534,
+                side: THREE.DoubleSide,
+                flatShading: true,
+                wireframe: type === 'neural' || type === 'dna' ? false : true
+            });
+            
+            model = new THREE.Mesh(geometry, material);
+            scene.add(model);
+            
+            // تحديث معلومات النموذج
+            updateModelInfo(type);
+        }
+        
+        // إنشاء جسيمات
+        function createParticles() {
+            const particlesCount = 1000;
+            const positions = new Float32Array(particlesCount * 3);
+            
+            for (let i = 0; i < particlesCount * 3; i += 3) {
+                const radius = 2 * Math.random();
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i + 2] = radius * Math.cos(phi);
+            }
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                color: 0x00a8ff,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            model = new THREE.Points(geometry, material);
+            scene.add(model);
+            
+            // تحديث معلومات النموذج
+            updateModelInfo('particles');
+        }
+        
+        // إنشاء هندسة شبكة عصبية
+        function createNeuralNetworkGeometry() {
+            const group = new THREE.Group();
+            const layers = 5;
+            const nodesPerLayer = 8;
+            const layerSpacing = 1.5;
+            
+            // إنشاء العقد
+            const nodes = [];
+            
+            for (let l = 0; l < layers; l++) {
+                const layerNodes = [];
+                
+                for (let i = 0; i < nodesPerLayer; i++) {
+                    const nodeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                    const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x00a8ff });
+                    const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+                    
+                    const x = l * layerSpacing - (layers * layerSpacing) / 2;
+                    const y = (i - (nodesPerLayer - 1) / 2) * 0.3;
+                    node.position.set(x, y, 0);
+                    
+                    group.add(node);
+                    layerNodes.push(node);
+                    
+                    // إنشاء الوصلات مع الطبقة السابقة
+                    if (l > 0) {
+                        for (let prevNode of nodes[l - 1]) {
+                            const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                                new THREE.Vector3(prevNode.position.x, prevNode.position.y, prevNode.position.z),
+                                new THREE.Vector3(node.position.x, node.position.y, node.position.z)
+                            ]);
+                            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00a8ff, opacity: 0.3, transparent: true });
+                            const line = new THREE.Line(lineGeometry, lineMaterial);
+                            group.add(line);
+                        }
+                    }
+                }
+                
+                nodes.push(layerNodes);
+            }
+            
+            return group;
+        }
+        
+        // إنشاء هندسة الحمض النووي
+        function createDNAGeometry() {
+            const group = new THREE.Group();
+            const radius = 0.05;
+            const segments = 100;
+            const length = 4;
+            const turns = 2;
+            
+            // إنشاء العمود الفقري
+            for (let i = 0; i < 2; i++) {
+                const points = [];
+                const offset = i === 0 ? 0 : Math.PI;
+                
+                for (let j = 0; j <= segments; j++) {
+                    const t = (j / segments) * length;
+                    const x = Math.cos(t * turns * Math.PI * 2 + offset) * 0.5;
+                    const y = t - length / 2;
+                    const z = Math.sin(t * turns * Math.PI * 2 + offset) * 0.5;
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0x00a8ff });
+                const line = new THREE.Line(geometry, material);
+                group.add(line);
+                
+                // إضافة الوصلات بين العمودين
+                if (i === 0) {
+                    for (let j = 0; j <= segments; j += 10) {
+                        const t = (j / segments) * length;
+                        const x1 = Math.cos(t * turns * Math.PI * 2) * 0.5;
+                        const x2 = Math.cos(t * turns * Math.PI * 2 + Math.PI) * 0.5;
+                        const y = t - length / 2;
+                        const z1 = Math.sin(t * turns * Math.PI * 2) * 0.5;
+                        const z2 = Math.sin(t * turns * Math.PI * 2 + Math.PI) * 0.5;
+                        
+                        const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                            new THREE.Vector3(x1, y, z1),
+                            new THREE.Vector3(x2, y, z2)
+                        ]);
+                        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff6b6b, opacity: 0.6, transparent: true });
+                        const connection = new THREE.Line(lineGeometry, lineMaterial);
+                        group.add(connection);
+                    }
+                }
+            }
+            
+            return group;
+        }
+        
+        // إعداد عناصر التحكم
+        function setupControls() {
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enableZoom = true;
+            controls.enablePan = false;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+        }
+        
+        // إعداد مستمعات الأحداث
+        function setupEventListeners() {
+            const canvas = document.getElementById('interactive-3d');
+            
+            // تفاعل الماوس
+            canvas.addEventListener('mousedown', onDocumentMouseDown, false);
+            canvas.addEventListener('mousemove', onDocumentMouseMove, false);
+            canvas.addEventListener('mouseup', onDocumentMouseUp, false);
+            canvas.addEventListener('mouseleave', onDocumentMouseUp, false);
+            
+            // تفاعل اللمس
+            canvas.addEventListener('touchstart', onDocumentTouchStart, false);
+            canvas.addEventListener('touchmove', onDocumentTouchMove, false);
+            canvas.addEventListener('touchend', onDocumentTouchEnd, false);
+            
+            // تغيير حجم النافذة
+            window.addEventListener('resize', onWindowResize, false);
+            
+            // عناصر التحكم في الواجهة
+            const modelType = document.getElementById('model-type');
+            const rotationSpeed = document.getElementById('rotation-speed');
+            const playButton = document.getElementById('play-btn');
+            const resetButton = document.getElementById('reset-btn');
+            
+            if (modelType) {
+                modelType.addEventListener('change', (e) => {
+                    createModel(e.target.value);
+                });
+            }
+            
+            if (rotationSpeed) {
+                rotationSpeed.addEventListener('input', (e) => {
+                    controls.autoRotateSpeed = parseFloat(e.target.value);
+                });
+            }
+            
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    isRotating = !isRotating;
+                    controls.autoRotate = isRotating;
+                    playButton.innerHTML = isRotating ? 
+                        '<i class="fas fa-pause"></i> إيقاف' : 
+                        '<i class="fas fa-play"></i> تشغيل';
+                });
+            }
+            
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    controls.reset();
+                    camera.position.z = 5;
+                    controls.update();
+                });
+            }
+            
+            // منع سلوك السحب الافتراضي للصور
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                }
+            }, false);
+        }
+        
+        // تحديث معلومات النموذج
+        function updateModelInfo(type) {
+            const modelInfo = {
+                brain: {
+                    title: 'نموذج الدماغ الاصطناعي',
+                    description: 'هذا النموذج يمثل بنية الدماغ البشري الرقمي، حيث تظهر الخلايا العصبية المتصالة التي تشكل الشبكة العصبية الاصطناعية.'
+                },
+                neural: {
+                    title: 'الشبكة العصبية الاصطناعية',
+                    description: 'تمثل هذه الشبكة العصبية الاصطناعية كيفية معالجة البيانات في أنظمة الذكاء الاصطناعي، مع طبقات من العصبونات المتصلة ببعضها البعض.'
+                },
+                particles: {
+                    title: 'الجسيمات الذكية',
+                    description: 'هذا النموذج يوضح كيف يمكن للخوارزميات الذكية تحليل وتصنيف البيانات المعقدة باستخدام مجموعات من الجسيمات الذكية.'
+                },
+                dna: {
+                    title: 'الحمض النووي الرقمي',
+                    description: 'تمثيل رقمي للحمض النووي يوضح كيف يمكن للذكاء الاصطناعي تحليل البيانات الجينية والتنبؤ بالنتائج الطبية.'
+                }
+            };
+            
+            const titleElement = document.getElementById('model-title');
+            const descriptionElement = document.getElementById('model-description');
+            
+            if (titleElement && descriptionElement && modelInfo[type]) {
+                titleElement.textContent = modelInfo[type].title;
+                descriptionElement.textContent = modelInfo[type].description;
+            }
+        }
+        
+        // معالجة أحداث الماوس
+        function onDocumentMouseDown(event) {
+            isDragging = true;
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+            
+            // إيقاف التدوير التلقائي عند السحب
+            controls.autoRotate = false;
+            
+            // تحديث حالة زر التشغيل/الإيقاف
+            const playButton = document.getElementById('play-btn');
+            if (playButton) {
+                playButton.innerHTML = '<i class="fas fa-play"></i> تشغيل';
+            }
+        }
+        
+        function onDocumentMouseMove(event) {
+            if (!isDragging) return;
+            
+            const deltaX = event.clientX - previousMousePosition.x;
+            const deltaY = event.clientY - previousMousePosition.y;
+            
+            if (model) {
+                targetRotation.y += deltaX * 0.01;
+                targetRotation.x += deltaY * 0.01;
+            }
+            
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+        
+        function onDocumentMouseUp() {
+            isDragging = false;
+        }
+        
+        // معالجة أحداث اللمس
+        function onDocumentTouchStart(event) {
+            if (event.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = {
+                    x: event.touches[0].pageX,
+                    y: event.touches[0].pageY
+                };
+                
+                // إيقاف التدوير التلقائي عند اللمس
+                controls.autoRotate = false;
+            }
+        }
+        
+        function onDocumentTouchMove(event) {
+            if (!isDragging || event.touches.length !== 1) return;
+            
+            const deltaX = event.touches[0].pageX - previousMousePosition.x;
+            const deltaY = event.touches[0].pageY - previousMousePosition.y;
+            
+            if (model) {
+                targetRotation.y += deltaX * 0.01;
+                targetRotation.x += deltaY * 0.01;
+            }
+            
+            previousMousePosition = {
+                x: event.touches[0].pageX,
+                y: event.touches[0].pageY
+            };
+            
+            event.preventDefault();
+        }
+        
+        function onDocumentTouchEnd() {
+            isDragging = false;
+        }
+        
+        // معالجة تغيير حجم النافذة
+        function onWindowResize() {
+            const canvas = document.getElementById('interactive-3d');
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        }
+        
+        // عرض رسالة خطأ
+        function showError(title, error) {
+            console.error(title, error);
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 2rem;
+                border-radius: 10px;
+                text-align: center;
+                max-width: 80%;
+                z-index: 1000;
+                border: 1px solid #ff4444;
+            `;
+            
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: #ff6b6b; font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h2 style="color: #ff6b6b; margin: 0.5rem 0;">${title}</h2>
+                <p style="margin: 1rem 0; color: #ddd;">${error?.message || 'حدث خطأ غير معروف'}</p>
+                <button onclick="window.location.reload()" style="
+                    background: #00a8ff;
+                    color: white;
+                    border: none;
+                    padding: 0.6rem 1.2rem;
+                    border-radius: 5px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                ">
+                    <i class="fas fa-sync-alt" style="margin-left: 8px;"></i>
+                    إعادة تحميل الصفحة
+                </button>
+            `;
+            
+            document.body.appendChild(errorDiv);
+            
+            // إخفاء شاشة التحميل
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) loadingScreen.style.display = 'none';
+        }
+        
+        // دالة التحريك الرئيسية
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // تحديث عناصر التحكم
+            if (controls) {
+                controls.update();
+            }
+            
+            // تدوير النموذج بسلاسة
+            if (model && !isDragging) {
+                model.rotation.y += 0.002;
+            }
+            
+            // عرض الإطارات في الثانية
+            renderer.render(scene, camera);
+        }
+        
+        // بدء التطبيق عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            try {
+                init();
+            } catch (error) {
+                console.error('فشل في بدء التطبيق:', error);
+                showError('فشل في بدء التطبيق', error);
+            }
+        });
+            throw new Error('Three.js library is required but not loaded');
+        }
+        // Global variables
+        let scene, camera, renderer, sphere, particles = [];
+        let controls, raycaster, mouse = new THREE.Vector2(), INTERSECTED;
+        let isRotating = true;
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotationSpeed = 0.005;
+        let autoRotateSpeed = 0.2;
+        let zoomLevel = 1;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+        
+        // تهيئة المتغيرات
+        let scene, camera, renderer, model, controls, particlesMesh;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let currentRotation = { x: 0, y: 0 };
+        let targetRotation = { x: 0, y: 0 };
+        let isHovered = false;
+        let lastTime = 0;
+        
+        // إضافة متغيرات إضافية للتحكم
+        let currentModel = 'brain';
+        let rotationSpeed = 0.005;
+        let isRotating = true;
+        
+        // معلومات النماذج
+        const modelsInfo = {
+            brain: {
+                title: 'نموذج الدماغ الاصطناعي',
+                description: 'تمثيل ثلاثي الأبعاد للدماغ البشري يوضح كيفية معالجة المعلومات في الشبكات العصبية الاصطناعية.'
+            },
+            neural: {
+                title: 'الشبكة العصبية',
+                description: 'تمثيل تفاعلي للشبكات العصبية الاصطناعية وكيفية تدريبها على التعرف على الأنماط.'
+            },
+            particles: {
+                title: 'الجسيمات الذكية',
+                description: 'محاكاة للجسيمات الذكية التي تتفاعل مع بعضها البعض لتشكيل أنماط معقدة.'
+            },
+            dna: {
+                title: 'الحمض النووي الرقمي',
+                description: 'تمثيل للخوارزميات الجينية التي تحاكي عملية التطور الطبيعي.'
+            }
+        };
+        
+        // الانتظار حتى يتم تحميل الصفحة بالكامل
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('تم تحميل الصفحة بنجاح، جاري تهيئة المشهد...');
+            init();
+        });
+        
+        // تهيئة المشهد
+        function init() {
+            try {
+                // إنشاء المشهد
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x0a0a1a);
+                scene.fog = new THREE.FogExp2(0x0a0a1a, 0.1);
+                
+                // إنشاء الكاميرا
+                camera = new THREE.PerspectiveCamera(
+                    60, // مجال رؤية أوسع
+                camera.position.z = 5;
+                
+                // إنشاء العارض
+                const canvas = document.getElementById('interactive-3d');
+                if (!canvas) {
+                    throw new Error('لم يتم العثور على عنصر canvas');
+                }
+                
+                renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas,
+                    antialias: true, 
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.setSize(window.innerWidth, window.innerHeight, false);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // إضافة الإضاءة
+                setupLights();
+                
+                // إنشاء النموذج
+                createModel();
+                
+                // إنشاء الجسيمات
+                createParticles();
+                
+                // إضافة عناصر التحكم
+                setupControls();
+                
+                // إضافة مستمعي الأحداث
+                setupEventListeners();
+                
+                // معالجة تغيير حجم النافذة
+                window.addEventListener('resize', onWindowResize, false);
+                
+                // بدء التحريك
+                animate();
+                
+                // إخفاء شاشة التحميل
+                const loadingElement = document.getElementById('loading-model');
+                if (loadingElement) {
+                    loadingElement.innerHTML = `
+                        <div style="text-align: center; color: #ff4d4d; padding: 20px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>عذراً، حدث خطأ في تحميل النموذج ثلاثي الأبعاد.</p>
+                            <p>${error.message}</p>
+                            <button onclick="window.location.reload()" style="margin-top: 15px; padding: 8px 20px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                إعادة تحميل الصفحة
+                            </button>
+                        </div>`;
+                }
+            }
+        }
+        
+        function setupLights() {
+            try {
+                console.log('إعداد الإضاءة...');
+                
+                // إضاءة محيطة خفيفة
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+                scene.add(ambientLight);
+                
+                // إضاءة اتجاهية رئيسية
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(2, 3, 4).normalize();
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 1024;
+                directionalLight.shadow.mapSize.height = 1024;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                scene.add(directionalLight);
+                
+                // إضاءة خلفية زرقاء ناعمة
+                const backLight = new THREE.DirectionalLight(0x00a2ff, 0.5);
+                backLight.position.set(-2, -1, -1);
+                scene.add(backLight);
+                
+                // إضاءة جانبية برتقالية دافئة
+                const sideLight = new THREE.DirectionalLight(0xff7b00, 0.4);
+                sideLight.position.set(1, 0.5, 1);
+                scene.add(sideLight);
+                
+                // إضاءة إضافية من الأسفل
+                const bottomLight = new THREE.DirectionalLight(0x00ffd0, 0.2);
+                bottomLight.position.set(0, -1, 0);
+                scene.add(bottomLight);
+                
+                console.log('تم إعداد الإضاءة بنجاح');
+            } catch (error) {
+                console.error('حدث خطأ أثناء إعداد الإضاءة:', error);
+                throw error; // إعادة رمي الخطأ للتعامل معه في الدالة الأم
+            }
+        }
+        
+        function createCamera() {
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 4;
+        }
+        
+        function createRenderer() {
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('canvas'),
+                antialias: true, 
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.25;
+        }
+        
+        function createLights() {
+            // إضاءة المحيطة
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+            scene.add(ambientLight);
+
+            // إضاءة اتجاهية
+            function createModel() {
+            try {
+                console.log('جاري إنشاء النموذج...');
+                
+                // إزالة النموذج الحالي إذا كان موجودًا
+                if (model) {
+                    scene.remove(model);
+                    if (model.geometry) model.geometry.dispose();
+                    if (model.material) {
+                        if (Array.isArray(model.material)) {
+                            model.material.forEach(material => material.dispose());
+                        } else if (model.material.dispose) {
+                            model.material.dispose();
+                        }
+                    }
+                    model = null;
+                }
+                
+                // إنشاء مجموعة للنموذج
+                model = new THREE.Group();
+                model.name = 'aiModel';
+                
+                // إنشاء الشكل الأساسي (دماغ)
+                const brainGeometry = new THREE.BrainGeometry(1, 32, 32);
+                
+                // مادة النموذج مع إعدادات محسنة
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x00a8ff,
+                    emissive: 0x002299,
+                    emissiveIntensity: 0.5,
+                    specular: 0x333333,
+                    shininess: 50,
+                    flatShading: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    wireframe: false,
+                    side: THREE.DoubleSide
+                });
+                
+                // إنشاء الشبكة
+                const brain = new THREE.Mesh(brainGeometry, material);
+                brain.name = 'brainMesh';
+                brain.castShadow = true;
+                brain.receiveShadow = true;
+                
+                // إضافة تأثير نبض متطور
+                const clock = new THREE.Clock();
+                
+                // تحديث النموذج في كل إطار
+                function updateModel() {
+                    const time = clock.getElapsedTime();
+                    
+                    // تأثير النبض
+                    const pulse = 1 + Math.sin(time * 1.5) * 0.03;
+                    
+                    // تأثير التنفس
+                    const breathing = Math.sin(time * 0.5) * 0.1 + 1;
+                    
+                    // تطبيق التأثيرات
+                    brain.scale.set(pulse, pulse * breathing, pulse);
+                    
+                    // دوران بسيط
+                    brain.rotation.y = time * 0.1;
+                    brain.rotation.x = Math.sin(time * 0.2) * 0.2;
+                }
+                
+                // إضافة النموذج إلى المجموعة الرئيسية
+                model.add(brain);
+                
+                // إضافة النموذج إلى المشهد
+                scene.add(model);
+                
+                console.log('تم إنشاء النموذج بنجاح');
+                
+                // إرجاع دالة التحديث
+                return updateModel;
+                
+            } catch (error) {
+                console.error('حدث خطأ أثناء إنشاء النموذج:', error);
+                throw error; // إعادة رمي الخطأ للتعامل معه في الدالة الأم
+            }
+        }    
+            const outerSphere = new THREE.Mesh(outerGeometry, outerMaterial);
+            model.add(outerSphere);
+            
+            // إضافة جسيمات متحركة
+            createParticles();
+{{ ... }}
+            
+            // إضافة النموذج إلى المشهد
+            scene.add(model);
+            
+                
+                // إزالة الجسيمات الحالية إذا كانت موجودة
+                if (particlesMesh) {
+                    scene.remove(particlesMesh);
+                    if (particlesMesh.geometry) particlesMesh.geometry.dispose();
+                    if (particlesMesh.material) {
+                        if (Array.isArray(particlesMesh.material)) {
+                            particlesMesh.material.forEach(m => m.dispose());
+                        } else if (particlesMesh.material.dispose) {
+                            particlesMesh.material.dispose();
+                        }
+                    }
+                    particlesMesh = null;
+                }
+                
+                const particlesGeometry = new THREE.BufferGeometry();
+                const particlesCount = 3000; // زيادة عدد الجسيمات
+                
+                const posArray = new Float32Array(particlesCount * 3);
+                const sizeArray = new Float32Array(particlesCount);
+                const colorArray = new Float32Array(particlesCount * 3);
+                
+                // ألوان متدرجة أكثر جاذبية
+                const colors = [
+                    new THREE.Color(0x00a8ff),  // أزرق فاتح
+                    new THREE.Color(0x4cc9f0),  // أزرق سماوي
+                    new THREE.Color(0x4361ee),  // أزرق
+                    new THREE.Color(0x3a0ca3),  // نيلي
+                    new THREE.Color(0x7209b7),  // بنفسجي
+                    new THREE.Color(0xf72585)   // وردي
+                ];
+                
+                // إنشاء توزيع كروي للجسيمات
+                for (let i = 0; i < particlesCount * 3; i += 3) {
+                    // إنشاء توزيع كروي مع تركيز أكبر حول المركز
+                    const radius = 1.5 + Math.random() * 2.5; // مسافة أبعد قليلاً
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    
+                    // إضافة بعض العشوائية للشكل الكروي
+                    const noise = 0.2;
+                    const x = radius * Math.sin(phi) * Math.cos(theta) + (Math.random() - 0.5) * noise;
+                    const y = radius * Math.sin(phi) * Math.sin(theta) + (Math.random() - 0.5) * noise;
+                    const z = radius * Math.cos(phi) + (Math.random() - 0.5) * noise;
+                    
+                    posArray[i] = x;
+                    posArray[i + 1] = y;
+                    posArray[i + 2] = z;
+                    
+                    // توزيع عشوائي للأحجام مع تغيير طفيف
+                    sizeArray[i / 3] = Math.random() * 0.15 + 0.05; // أحجام أصغر
+                    
+                    // تدرج ألوان عشوائي مع مرجحة للألوان الباردة
+                    const colorIndex = Math.floor(Math.pow(Math.random(), 2) * colors.length);
+                    const color = colors[Math.min(colorIndex, colors.length - 1)];
+                    
+                    // تباين لوني طفيف
+                    const hueVariation = (Math.random() - 0.5) * 0.1;
+                    const tempColor = color.clone();
+                    tempColor.offsetHSL(hueVariation, 0, 0);
+                    
+                    colorArray[i] = tempColor.r;
+                    colorArray[i + 1] = tempColor.g;
+                    colorArray[i + 2] = tempColor.b;
+                }
+                
+                particlesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(posArray, 3));
+                particlesGeometry.setAttribute('size', new THREE.Float32BufferAttribute(sizeArray, 1));
+                particlesGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, 3));
+                
+                // تحسين مادة الجسيمات
+                const particlesMaterial = new THREE.PointsMaterial({
+                    size: 0.1,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true,
+                    depthWrite: false
+                });
+                
+                particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+                particlesMesh.name = 'particles';
+                scene.add(particlesMesh);
+                
+                console.log('تم إنشاء الجسيمات بنجاح');
+                
+                // إرجاع دالة تحديث الجسيمات
+                return function updateParticles(time) {
+                    if (!particlesMesh) return;
+                    
+                    const positions = particlesGeometry.attributes.position.array;
+                    const sizes = particlesGeometry.attributes.size.array;
+                    
+                    for (let i = 0; i < positions.length; i += 3) {
+                        // حركة دائرية بسيطة مع ترددات مختلفة
+                        const speed = 0.2 + (i % 10) * 0.01;
+                        const radius = 0.1 + (i % 5) * 0.05;
+                        
+                        positions[i] += Math.sin(time * 0.001 * speed) * 0.01;
+                        positions[i + 1] += Math.cos(time * 0.001 * speed * 1.3) * 0.01;
+                        positions[i + 2] += Math.sin(time * 0.001 * speed * 0.7) * 0.01;
+                        
+                        // تأثير نبض خفيف
+                        if (sizes) {
+                            const baseSize = 0.05 + (i % 10) * 0.01;
+                            sizes[i / 3] = baseSize * (1 + Math.sin(time * 0.001 + i) * 0.3);
+                        }
+                    }
+                    
+                    particlesGeometry.attributes.position.needsUpdate = true;
+                    if (sizes) {
+                        particlesGeometry.attributes.size.needsUpdate = true;
+                    }
+                };
+                
+            } catch (error) {
+                console.error('حدث خطأ أثناء إنشاء الجسيمات:', error);
+                throw error; // إعادة رمي الخطأ للتعامل معه في الدالة الأم
+            }
+        }
+        
+        // تهيئة النموذج والجسيمات
+        function initModel() {
+            try {
+                // إنشاء النموذج
+                updateModel = createModel();
+                
+                // إنشاء الجسيمات
+                updateParticles = createParticles();
+                
+                // تفعيل التحكم بالنموذج
+                setupControls();
+                
+                // إخفاء شاشة التحميل
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                
+                console.log('تم تهيئة النموذج والجسيمات بنجاح');
+                
+            } catch (error) {
+                console.error('فشل في تهيئة النموذج:', error);
+                
+                // عرض رسالة خطأ للمستخدم
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #ff6b6b; margin-bottom: 1rem;">حدث خطأ في تحميل النموذج</h3>
+                            <p style="margin-bottom: 1.5rem;">عذراً، حدث خطأ أثناء تحميل النموذج ثلاثي الأبعاد.</p>
+                            <button onclick="window.location.reload()" class="btn btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 5px; cursor: pointer; background: var(--primary-color); color: #fff; border: none;">
+                                <i class="fas fa-sync-alt" style="margin-left: 8px;"></i>إعادة المحاولة
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+        }
+        
+        function setupControls() {
+            // إضافة عناصر تحكم OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 3;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 1.5;
+            
+            // إخفاء عناصر التحكم الافتراضية
+            controls.enableZoom = true;
+            controls.enablePan = false;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // منع سلوك السحب الافتراضي للصور
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+        
+        function showInfoPanel() {
+            const infoPanel = document.getElementById('info');
+            infoPanel.style.display = 'block';
+            setTimeout(() => {
+                infoPanel.style.opacity = '1';
+                infoPanel.style.transform = 'translateX(0)';
+            }, 100);
+        }
+        
+        function onDocumentMouseMove(event) {
+            if (isDragging) {
+                const deltaMove = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
+                
+                // تحديث الدوران المستهدف
+                targetRotation.y += deltaMove.x * 0.01;
+                targetRotation.x += deltaMove.y * 0.01;
+                
+                previousMousePosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+            
+            // تحديث إحداثيات الماوس للتأثيرات البصرية
+            mouseX = (event.clientX - windowHalfX) * 0.001;
+            mouseY = (event.clientY - windowHalfY) * 0.001;
+            
+            // تحديث تأثيرات الإضاءة بناءً على موضع الماوس
+            if (scene && scene.children) {
+                scene.children.forEach(child => {
+                    if (child instanceof THREE.PointLight) {
+                        child.position.x = Math.sin(mouseX * 2) * 5;
+                        child.position.y = Math.sin(mouseY * 2) * 5;
+                    }
+                });
+            }
+        }
+        
+        function onDocumentMouseDown(event) {
+            isDragging = true;
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+        
+        function onDocumentMouseUp() {
+            isDragging = false;
+        }
+        
+        function onDocumentMouseWheel(event) {
+            camera.position.z += event.deltaY * 0.01;
+            camera.position.z = Math.max(3, Math.min(10, camera.position.z));
+        }
+        
+        function onDocumentTouchStart(event) {
+            if (event.touches.length === 1) {
+                previousMousePosition = {
+                    x: event.touches[0].pageX,
+                    y: event.touches[0].pageY
+                };
+            }
+        }
+        
+        function onDocumentTouchMove(event) {
+            if (event.touches.length === 1) {
+                event.preventDefault();
+                
+                const deltaMove = {
+                    x: event.touches[0].pageX - previousMousePosition.x,
+                    y: event.touches[0].pageY - previousMousePosition.y
+                };
+                
+                sphere.rotation.y += deltaMove.x * 0.01;
+                sphere.rotation.x += deltaMove.y * 0.01;
+                
+                previousMousePosition = {
+                    x: event.touches[0].pageX,
+                    y: event.touches[0].pageY
+                };
+            }
+        }
+        
+        function onDocumentTouchEnd() {
+            isDragging = false;
+        }
+        
+        // دالة التحريك الرئيسية
+        function animate(time) {
+            requestAnimationFrame(animate);
+            
+            // حساب الوقت المنقضي
+            if (!lastTime) lastTime = time;
+            const deltaTime = time - lastTime;
+            lastTime = time;
+            
+            // تحديث عناصر التحكم
+            if (controls) {
+                controls.update();
+            }
+            
+            // تدوير النموذج بسلاسة
+            if (model) {
+                // تدوير تدريجي نحو الهدف
+                currentRotation.x += (targetRotation.x - currentRotation.x) * 0.05;
+                currentRotation.y += (targetRotation.y - currentRotation.y) * 0.05;
+                
+                // تطبيق الدوران مع تأثير التخميد
+                model.rotation.y = currentRotation.y;
+                model.rotation.x = currentRotation.x;
+                
+                // إضافة حركة طفيفة مستمرة
+                if (!isDragging) {
+                    targetRotation.y += 0.0005 * 0.2; // سرعة دوران أبطأ
+                }
+            }
+            
+            // تحريك الجسيمات
+            if (particlesMesh && particlesMesh.geometry) {
+                const positions = particlesMesh.geometry.attributes.position.array;
+                const sizes = particlesMesh.geometry.attributes.size?.array;
+                const timeFactor = time * 0.001;
+                
+                for (let i = 0; i < positions.length; i += 3) {
+                    // حركة موجة بسيطة للجسيمات
+                    const i3 = i / 3;
+                    const wave = Math.sin(timeFactor * 0.5 + i3 * 0.1) * 0.05;
+                    
+                    // تحديث مواضع الجسيمات
+                    const radius = 2 + wave + (i3 % 2) * 0.5;
+                    const angle = timeFactor * 0.2 + i3 * 0.1;
+                    
+                    positions[i] = Math.sin(angle) * radius;
+                    positions[i + 1] = Math.cos(angle * 0.7) * radius;
+                    positions[i + 2] = Math.sin(angle * 0.5) * radius;
+                    
+                    // تأثير نبض للجسيمات
+                    if (sizes && isHovered) {
+                        sizes[i3] = 0.15 + Math.sin(timeFactor * 5 + i3) * 0.1;
+                    }
+                }
+                
+                particlesMesh.geometry.attributes.position.needsUpdate = true;
+                if (sizes) {
+                    particlesMesh.geometry.attributes.size.needsUpdate = true;
+                }
+            }
+            
+            // تحديث العارض
+            renderer.render(scene, camera);
+        }
+        
+        // معالجة تغيير حجم النافذة
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // تعريف فئة BrainGeometry
+        THREE.BrainGeometry = function(radius, widthSegments, heightSegments) {
+            THREE.BufferGeometry.call(this);
+            
+            this.type = 'BrainGeometry';
+            
+            this.parameters = {
+                radius: radius || 1,
+                widthSegments: widthSegments || 8,
+                heightSegments: heightSegments || 6
+            };
+            
+            const widthSeg = Math.max(3, Math.floor(this.parameters.widthSegments));
+            const heightSeg = Math.max(2, Math.floor(this.parameters.heightSegments));
+            const radiusValue = this.parameters.radius;
+            
+            // إنشاء مصفوفات للبيانات
+            const indices = [];
+            const vertices = [];
+            const normals = [];
+            const uvs = [];
+            
+            // إنشاء نقاط السطح
+            for (let y = 0; y <= heightSeg; y++) {
+                const v = y / heightSeg;
+                
+                for (let x = 0; x <= widthSeg; x++) {
+                    const u = x / widthSeg;
+                    
+                    // إنشاء شكل دماغي باستخدام دوال جيبية
+                    const theta = u * Math.PI * 2;
+                    const phi = v * Math.PI;
+                    
+                    // إنشاء تشوهات طبيعية للشكل
+                    const distortion = 0.2 * Math.sin(u * Math.PI * 4) * Math.sin(v * Math.PI * 2);
+                    
+                    // حساب المواضع
+                    const xPos = (radiusValue + distortion) * Math.sin(phi) * Math.cos(theta);
+                    const yPos = (radiusValue + distortion * 0.5) * Math.cos(phi);
+                    const zPos = (radiusValue + distortion * 0.7) * Math.sin(phi) * Math.sin(theta);
+                    
+                    // إضافة التواءات إضافية لتبدو أكثر واقعية
+                    const twist = 0.3 * Math.sin(v * Math.PI * 3);
+                    const twistedX = xPos * Math.cos(twist) - zPos * Math.sin(twist);
+                    const twistedZ = xPos * Math.sin(twist) + zPos * Math.cos(twist);
+                    
+                    vertices.push(twistedX, yPos, twistedZ);
+                    
+                    // حساب المتجهات العمودية
+                    const vertex = new THREE.Vector3(twistedX, yPos, twistedZ).normalize();
+                    normals.push(vertex.x, vertex.y, vertex.z);
+                    
+                    // إحداثيات النسيج
+                    uvs.push(u, 1 - v);
+                }
+            }
+            
+            // إنشاء الوجوه (المثلثات)
+            for (let y = 0; y < heightSeg; y++) {
+                for (let x = 0; x < widthSeg; x++) {
+                    const a = x + (widthSeg + 1) * y;
+                    const b = x + (widthSeg + 1) * (y + 1);
+                    const c = (x + 1) + (widthSeg + 1) * (y + 1);
+                    const d = (x + 1) + (widthSeg + 1) * y;
+                    
+                    // مثلثين لكل خلية
+                    indices.push(a, b, d);
+                    indices.push(b, c, d);
+                }
+            }
+            
+            // تعيين السمات للهندسة
+            this.setIndex(indices);
+            this.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            this.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+            this.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+            
+            this.computeBoundingSphere();
+        };
+        
+        THREE.BrainGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
+        THREE.BrainGeometry.prototype.constructor = THREE.BrainGeometry;
+    }
+}
+
+function onDocumentTouchEnd() {
+    isDragging = false;
+}
+
+// دالة التحريك الرئيسية
+function animate(time) {
+    requestAnimationFrame(animate);
+    
+    // حساب الوقت المنقضي
+    if (!lastTime) lastTime = time;
+    const deltaTime = time - lastTime;
+    lastTime = time;
+    
+    // تحديث عناصر التحكم
+    if (controls) {
+        controls.update();
+    }
+    
+    // تدوير النموذج بسلاسة
+    if (model) {
+        // تدوير تدريجي نحو الهدف
+        currentRotation.x += (targetRotation.x - currentRotation.x) * 0.05;
+        currentRotation.y += (targetRotation.y - currentRotation.y) * 0.05;
+        
+        // تطبيق الدوران مع تأثير التخميد
+        model.rotation.y = currentRotation.y;
+        model.rotation.x = currentRotation.x;
+        
+        // إضافة حركة طفيفة مستمرة
+        if (!isDragging) {
+            targetRotation.y += 0.0005 * 0.2; // سرعة دوران أبطأ
+        }
+    }
+    
+    // تحريك الجسيمات
+    if (particlesMesh && particlesMesh.geometry) {
+        const positions = particlesMesh.geometry.attributes.position.array;
+        const sizes = particlesMesh.geometry.attributes.size?.array;
+        const timeFactor = time * 0.001;
+        
+        for (let i = 0; i < positions.length; i += 3) {
+            // حركة موجة بسيطة للجسيمات
+            const i3 = i / 3;
+            const wave = Math.sin(timeFactor * 0.5 + i3 * 0.1) * 0.05;
+            
+            // تحديث مواضع الجسيمات
+            const radius = 2 + wave + (i3 % 2) * 0.5;
+            const angle = timeFactor * 0.2 + i3 * 0.1;
+            
+            positions[i] = Math.sin(angle) * radius;
+            positions[i + 1] = Math.cos(angle * 0.7) * radius;
+            positions[i + 2] = Math.sin(angle * 0.5) * radius;
+            
+            // تأثير نبض للجسيمات
+            if (sizes && isHovered) {
+                sizes[i3] = 0.15 + Math.sin(timeFactor * 5 + i3) * 0.1;
+            }
+        }
+        
+        particlesMesh.geometry.attributes.position.needsUpdate = true;
+        if (sizes) {
+            particlesMesh.geometry.attributes.size.needsUpdate = true;
+        }
+    }
+    
+    // تحديث العارض
+    renderer.render(scene, camera);
+}
+
+// معالجة تغيير حجم النافذة
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// تعريف فئة BrainGeometry
+THREE.BrainGeometry = function(radius, widthSegments, heightSegments) {
+    THREE.BufferGeometry.call(this);
+    
+    this.type = 'BrainGeometry';
+    
+    this.parameters = {
+        radius: radius || 1,
+        widthSegments: widthSegments || 8,
+        heightSegments: heightSegments || 6
+    };
+    
+    const widthSeg = Math.max(3, Math.floor(this.parameters.widthSegments));
+    const heightSeg = Math.max(2, Math.floor(this.parameters.heightSegments));
+    const radiusValue = this.parameters.radius;
+    
+    // إنشاء مصفوفات للبيانات
+    const indices = [];
+    const vertices = [];
+    const normals = [];
+    const uvs = [];
+    
+    // إنشاء نقاط السطح
+    for (let y = 0; y <= heightSeg; y++) {
+        const v = y / heightSeg;
+        
+        for (let x = 0; x <= widthSeg; x++) {
+            const u = x / widthSeg;
+            
+            // إنشاء شكل دماغي باستخدام دوال جيبية
+            const theta = u * Math.PI * 2;
+            const phi = v * Math.PI;
+            
+            // إنشاء تشوهات طبيعية للشكل
+            const distortion = 0.2 * Math.sin(u * Math.PI * 4) * Math.sin(v * Math.PI * 2);
+            
+            // حساب المواضع
+            const xPos = (radiusValue + distortion) * Math.sin(phi) * Math.cos(theta);
+            const yPos = (radiusValue + distortion * 0.5) * Math.cos(phi);
+            const zPos = (radiusValue + distortion * 0.7) * Math.sin(phi) * Math.sin(theta);
+            
+            // إضافة التواءات إضافية لتبدو أكثر واقعية
+            const twist = 0.3 * Math.sin(v * Math.PI * 3);
+            const twistedX = xPos * Math.cos(twist) - zPos * Math.sin(twist);
+            const twistedZ = xPos * Math.sin(twist) + zPos * Math.cos(twist);
+            
+            vertices.push(twistedX, yPos, twistedZ);
+            
+            // حساب المتجهات العمودية
+            const vertex = new THREE.Vector3(twistedX, yPos, twistedZ).normalize();
+            normals.push(vertex.x, vertex.y, vertex.z);
+            
+            // إحداثيات النسيج
+            uvs.push(u, 1 - v);
+        }
+    }
+    
+    // إنشاء الوجوه (المثلثات)
+    for (let y = 0; y < heightSeg; y++) {
+        for (let x = 0; x < widthSeg; x++) {
+            const a = x + (widthSeg + 1) * y;
+            const b = x + (widthSeg + 1) * (y + 1);
+            const c = (x + 1) + (widthSeg + 1) * (y + 1);
+            const d = (x + 1) + (widthSeg + 1) * y;
+            
+            // مثلثين لكل خلية
+            indices.push(a, b, d);
+            indices.push(b, c, d);
+        }
+    }
+    
+    // تعيين السمات للهندسة
+    this.setIndex(indices);
+    this.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    this.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    this.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    
+    this.computeBoundingSphere();
+};
+
+THREE.BrainGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
+THREE.BrainGeometry.prototype.constructor = THREE.BrainGeometry;
+
+// بدء التطبيق
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        console.log('بدء تحميل التطبيق...');
+
+        // 1. تهيئة المشهد الأساسي
+        init();
+        console.log('تم تهيئة المشهد');
+
+        // 2. إعداد عناصر التحكم
+        setupControls();
+        console.log('تم إعداد عناصر التحكم');
+
+        // 3. إعداد مستمعات الأحداث
+        setupEventListeners();
+        console.log('تم إعداد مستمعات الأحداث');
+
+        // 4. تحميل النموذج ثلاثي الأبعاد
+        initModel().then(() => {
+            console.log('تم تحميل النموذج بنجاح');
+
+            // 5. بدء التحريك بعد تحميل النموذج
+            animate();
+            console.log('تم بدء التحريك');
+
+            // إخفاء شاشة التحميل بعد تحميل كل شيء
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+        }).catch(error => {
+            console.error('خطأ في تحميل النموذج:', error);
+            showError('خطأ في تحميل النموذج', error);
+        });
+    } catch (error) {
+        console.error('خطأ في تهيئة التطبيق:', error);
+        showError('خطأ في تهيئة التطبيق', error);
+    }
+});
+
+// دالة لعرض رسائل الخطأ
+function showError(title, error) {
+    console.error(title, error);
+
+    // إخفاء شاشة التحميل
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) loadingScreen.style.display = 'none';
+
+    // إنشاء عنصر رسالة الخطأ
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 80%;
+    z-index: 1000;
+    border: 1px solid #ff4444;
+    `;
+
+    errorDiv.innerHTML = `
+    <i class="fas fa-exclamation-triangle" style="color: #ff6b6b; font-size: 3rem; margin-bottom: 1rem;"></i>
+    <h2 style="color: #ff6b6b; margin: 0.5rem 0;">${title}</h2>
+    <p style="margin: 1rem 0; color: #ddd;">${error?.message || 'حدث خطأ غير معروف'}</p>
+    <button onclick="window.location.reload()" style="
+    background: #00a8ff;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    ">
+    <i class="fas fa-sync-alt" style="margin-left: 8px;"></i>
+    إعادة تحميل الصفحة
+    </button>
+    `;
+
+    document.body.appendChild(errorDiv);
+}
+
+let scene, camera, renderer, model, controls;
+let isRotating = true;
+let rotationSpeed = parseFloat(rotationSpeedInput.value);
+let currentModel = 'brain';
+let currentColor = 0x00f7ff;
+
+// تهيئة المشهد ثلاثي الأبعاد
+function init() {
+// دالة لعرض رسائل الخطأ
+function showError(title, error) {
+console.error(title, error);
+
+// إخفاء شاشة التحميل
+const loadingScreen = document.getElementById('loading-screen');
+if (loadingScreen) loadingScreen.style.display = 'none';
+
+// إنشاء عنصر رسالة الخطأ
+const errorDiv = document.createElement('div');
+errorDiv.style.cssText = `
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: rgba(0, 0, 0, 0.9);
+color: white;
+padding: 2rem;
+border-radius: 10px;
+text-align: center;
+max-width: 80%;
+z-index: 1000;
+border: 1px solid #ff4444;
+`;
+
+errorDiv.innerHTML = `
+<i class="fas fa-exclamation-triangle" style="color: #ff6b6b; font-size: 3rem; margin-bottom: 1rem;"></i>
+<h2 style="color: #ff6b6b; margin: 0.5rem 0;">${title}</h2>
+<p style="margin: 1rem 0; color: #ddd;">${error?.message || 'حدث خطأ غير معروف'}</p>
+<button onclick="window.location.reload()" style="
+background: #00a8ff;
+color: white;
+border: none;
+padding: 0.8rem 1.5rem;
+border-radius: 5px;
+font-size: 1rem;
+cursor: pointer;
+margin-top: 1rem;
+">
+<i class="fas fa-sync-alt" style="margin-left: 8px;"></i>
+إعادة تحميل الصفحة
+</button>
+`;
+
+document.body.appendChild(errorDiv);
+}
+
+function init() {
+try {
+// إنشاء المشهد
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0e17);
+
+// إنشاء الكاميرا
+createCamera();
+
+// إنشاء العارض
+createRenderer();
+renderer = new THREE.WebGLRenderer({ 
+canvas,
+antialias: true,
+alpha: true
+});
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+// إضافة الإضاءة
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(1, 1, 1);
+scene.add(directionalLight);
+
+// إنشاء النموذج الأولي
+createModel(currentModel);
+
+// إضافة عناصر تحكم OrbitControls
+controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+
+// معالجة تغيير حجم النافذة
+window.addEventListener('resize', onWindowResize);
+
+// بدء التحريك
+animate();
+
+// إخفاء شاشة التحميل بعد ثانية
+setTimeout(() => {
+loadingModel.style.opacity = '0';
+setTimeout(() => {
+loadingModel.style.display = 'none';
+}, 500);
+}, 1000);
+}
+
+// إنشاء النموذج
+function createModel(type) {
+// إزالة النموذج الحالي إذا كان موجودًا
+if (model) {
+scene.remove(model);
+}
+
+let geometry, material;
+
+switch(type) {
+case 'brain':
+geometry = new THREE.BrainGeometry(2, 64, 64);
+break;
+case 'neural':
+geometry = createNeuralNetworkGeometry();
+break;
+case 'particles':
+geometry = createParticlesGeometry();
+break;
+case 'dna':
+geometry = createDNAGeometry();
+break;
+default:
+geometry = new THREE.SphereGeometry(1, 32, 32);
+}
+
+material = new THREE.MeshPhongMaterial({
+color: currentColor,
+emissive: currentColor,
+emissiveIntensity: 0.2,
+shininess: 50,
+flatShading: true,
+wireframe: true
+});
+
+model = new THREE.Mesh(geometry, material);
+scene.add(model);
+
+// تحديث معلومات النموذج
+updateModelInfo(type);
+}
+
+// إنشاء هندسة شبكة عصبية
+function createNeuralNetworkGeometry() {
+const group = new THREE.Group();
+
+// إنشاء طبقات الشبكة
+const layers = 5;
+const nodesPerLayer = 8;
+const layerSpacing = 1.5;
+
+// إنشاء العقد والوصلات
+const nodes = [];
+
+for (let l = 0; l < layers; l++) {
+const layerNodes = [];
+
+for (let i = 0; i < nodesPerLayer; i++) {
+const nodeGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+const nodeMaterial = new THREE.MeshBasicMaterial({ color: currentColor });
+const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+
+// ترتيب العقد في طبقة
+const x = l * layerSpacing - (layers * layerSpacing) / 2;
+const y = (i - (nodesPerLayer - 1) / 2) * 0.3;
+node.position.set(x, y, 0);
+
+group.add(node);
+layerNodes.push(node);
+
+// إنشاء وصلات مع الطبقة السابقة
+if (l > 0) {
+for (let prevNode of nodes[l-1]) {
+const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+new THREE.Vector3(prevNode.position.x, prevNode.position.y, prevNode.position.z),
+new THREE.Vector3(node.position.x, node.position.y, node.position.z)
+]);
+const lineMaterial = new THREE.LineBasicMaterial({ 
+color: currentColor,
+transparent: true,
+opacity: 0.3
+});
+const line = new THREE.Line(lineGeometry, lineMaterial);
+group.add(line);
+}
+}
+}
+
+nodes.push(layerNodes);
+}
+
+return group;
+}
+
+// إنشاء هندسة الجسيمات
+function createParticlesGeometry() {
+const particles = 5000;
+const geometry = new THREE.BufferGeometry();
+const positions = [];
+const colors = [];
+const color = new THREE.Color();
+
+for (let i = 0; i < particles; i++) {
+// إنشاء مواضع عشوائية داخل كرة
+const theta = Math.random() * Math.PI * 2;
+const phi = Math.acos(2 * Math.random() - 1);
+const radius = 2 * Math.cbrt(Math.random());
+
+const x = radius * Math.sin(phi) * Math.cos(theta);
+const y = radius * Math.sin(phi) * Math.sin(theta);
+const z = radius * Math.cos(phi);
+
+positions.push(x, y, z);
+
+// ألوان متدرجة
+color.setHSL((z / 2 + 0.5) * 0.5 + 0.5, 0.8, 0.5);
+colors.push(color.r, color.g, color.b);
+}
+
+geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+const material = new THREE.PointsMaterial({
+size: 0.05,
+vertexColors: true,
+transparent: true,
+opacity: 0.8,
+sizeAttenuation: true
+});
+
+return new THREE.Points(geometry, material);
+}
+
+// إنشاء هندسة الحمض النووي
+function createDNAGeometry() {
+const group = new THREE.Group();
+const radius = 0.1;
+const segments = 100;
+const length = 4;
+const turns = 2;
+
+// إنشاء العمود الفقري للحمض النووي
+for (let i = 0; i < 2; i++) {
+const points = [];
+const offset = i === 0 ? 0 : Math.PI;
+
+for (let j = 0; j <= segments; j++) {
+const t = (j / segments) * length;
+const x = Math.cos(t * turns * Math.PI * 2 + offset) * 0.5;
+const y = t - length / 2;
+const z = Math.sin(t * turns * Math.PI * 2 + offset) * 0.5;
+
+points.push(new THREE.Vector3(x, y, z));
+}
+
+const geometry = new THREE.BufferGeometry().setFromPoints(points);
+const material = new THREE.LineBasicMaterial({ color: currentColor });
+const line = new THREE.Line(geometry, material);
+group.add(line);
+}
+
+return group;
+}
+                // إنشاء الكاميرا
+                createCamera();
+                
+                // إنشاء العارض
+                createRenderer();
+                renderer = new THREE.WebGLRenderer({ 
+                    canvas,
+                    antialias: true,
+                    alpha: true
+                });
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                
+                // إضافة الإضاءة
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(1, 1, 1);
+                scene.add(directionalLight);
+                
+                // إنشاء النموذج الأولي
+                createModel(currentModel);
+                
+                // إضافة عناصر تحكم OrbitControls
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                
+                // معالجة تغيير حجم النافذة
+                window.addEventListener('resize', onWindowResize);
+                
+                // بدء التحريك
+                animate();
+                
+                // إخفاء شاشة التحميل بعد ثانية
+                setTimeout(() => {
+                    loadingModel.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingModel.style.display = 'none';
+                    }, 500);
+                }, 1000);
+            }
+            
+            // إنشاء النموذج
+            function createModel(type) {
+                // إزالة النموذج الحالي إذا كان موجودًا
+                if (model) {
+                    scene.remove(model);
+                }
+                
+                let geometry, material;
+                
+                switch(type) {
+                    case 'brain':
+                        geometry = new THREE.BrainGeometry(2, 64, 64);
+                        break;
+                    case 'neural':
+                        geometry = createNeuralNetworkGeometry();
+                        break;
+                    case 'particles':
+                        geometry = createParticlesGeometry();
+                        break;
+                    case 'dna':
+                        geometry = createDNAGeometry();
+                        break;
+                    default:
+                        geometry = new THREE.SphereGeometry(1, 32, 32);
+                }
+                
+                material = new THREE.MeshPhongMaterial({
+                    color: currentColor,
+                    emissive: currentColor,
+                    emissiveIntensity: 0.2,
+                    shininess: 50,
+                    flatShading: true,
+                    wireframe: true
+                });
+                
+                model = new THREE.Mesh(geometry, material);
+                scene.add(model);
+                
+                // تحديث معلومات النموذج
+                updateModelInfo(type);
+            }
+            
+            // إنشاء هندسة شبكة عصبية
+            function createNeuralNetworkGeometry() {
+                const group = new THREE.Group();
+                
+                // إنشاء طبقات الشبكة
+                const layers = 5;
+                const nodesPerLayer = 8;
+                const layerSpacing = 1.5;
+                
+                // إنشاء العقد والوصلات
+                const nodes = [];
+                
+                for (let l = 0; l < layers; l++) {
+                    const layerNodes = [];
+                    
+                    for (let i = 0; i < nodesPerLayer; i++) {
+                        const nodeGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+                        const nodeMaterial = new THREE.MeshBasicMaterial({ color: currentColor });
+                        const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+                        
+                        // ترتيب العقد في طبقة
+                        const x = l * layerSpacing - (layers * layerSpacing) / 2;
+                        const y = (i - (nodesPerLayer - 1) / 2) * 0.3;
+                        node.position.set(x, y, 0);
+                        
+                        group.add(node);
+                        layerNodes.push(node);
+                        
+                        // إنشاء وصلات مع الطبقة السابقة
+                        if (l > 0) {
+                            for (let prevNode of nodes[l-1]) {
+                                const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                                    new THREE.Vector3(prevNode.position.x, prevNode.position.y, prevNode.position.z),
+                                    new THREE.Vector3(node.position.x, node.position.y, node.position.z)
+                                ]);
+                                const lineMaterial = new THREE.LineBasicMaterial({ 
+                                    color: currentColor,
+                                    transparent: true,
+                                    opacity: 0.3
+                                });
+                                const line = new THREE.Line(lineGeometry, lineMaterial);
+                                group.add(line);
+                            }
+                        }
+                    }
+                    
+                    nodes.push(layerNodes);
+                }
+                
+                return group;
+            }
+            
+            // إنشاء هندسة الجسيمات
+            function createParticlesGeometry() {
+                const particles = 5000;
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+                const colors = [];
+                const color = new THREE.Color();
+                
+                for (let i = 0; i < particles; i++) {
+                    // إنشاء مواضع عشوائية داخل كرة
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    const radius = 2 * Math.cbrt(Math.random());
+                    
+                    const x = radius * Math.sin(phi) * Math.cos(theta);
+                    const y = radius * Math.sin(phi) * Math.sin(theta);
+                    const z = radius * Math.cos(phi);
+                    
+                    positions.push(x, y, z);
+                    
+                    // ألوان متدرجة
+                    color.setHSL((z / 2 + 0.5) * 0.5 + 0.5, 0.8, 0.5);
+                    colors.push(color.r, color.g, color.b);
+                }
+                
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 0.05,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.8,
+                    sizeAttenuation: true
+                });
+                
+                return new THREE.Points(geometry, material);
+            }
+            
+            // إنشاء هندسة الحمض النووي
+            function createDNAGeometry() {
+                const group = new THREE.Group();
+                const radius = 0.1;
+                const segments = 100;
+                const length = 4;
+                const turns = 2;
+                
+                // إنشاء العمود الفقري للحمض النووي
+                for (let i = 0; i < 2; i++) {
+                    const points = [];
+                    const offset = i === 0 ? 0 : Math.PI;
+                    
+                    for (let j = 0; j <= segments; j++) {
+                        const t = (j / segments) * length;
+                        const x = Math.cos(t * turns * Math.PI * 2 + offset) * 0.5;
+                        const y = t - length / 2;
+                        const z = Math.sin(t * turns * Math.PI * 2 + offset) * 0.5;
+                        
+                        points.push(new THREE.Vector3(x, y, z));
+                    }
+                    
+                    const curve = new THREE.CatmullRomCurve3(points);
+                    const tubeGeometry = new THREE.TubeGeometry(curve, segments * 2, radius / 2, 8, false);
+                    const material = new THREE.MeshPhongMaterial({
+                        color: currentColor,
+                        emissive: currentColor,
+                        emissiveIntensity: 0.2,
+                        flatShading: true
+                    });
+                    
+                    const tube = new THREE.Mesh(tubeGeometry, material);
+                    group.add(tube);
+                }
+                
+                // إضافة الوصلات بين الخيوط
+                const steps = 20;
+                for (let i = 0; i < steps; i++) {
+                    const t = (i / steps) * length;
+                    const offset1 = 0;
+                    const offset2 = Math.PI;
+                    
+                    const x1 = Math.cos(t * turns * Math.PI * 2 + offset1) * 0.5;
+                    const y1 = t - length / 2;
+                    const z1 = Math.sin(t * turns * Math.PI * 2 + offset1) * 0.5;
+                    
+                    const x2 = Math.cos(t * turns * Math.PI * 2 + offset2) * 0.5;
+                    const y2 = y1;
+                    const z2 = Math.sin(t * turns * Math.PI * 2 + offset2) * 0.5;
+                    
+                    const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(x1, y1, z1),
+                        new THREE.Vector3(x2, y2, z2)
+                    ]);
+                    
+                    const lineMaterial = new THREE.LineBasicMaterial({
+                        color: currentColor,
+                        transparent: true,
+                        opacity: 0.5
+                    });
+                    
+                    const line = new THREE.Line(lineGeometry, lineMaterial);
+                    group.add(line);
+                }
+                
+                return group;
+            }
+            
+            // تحديث معلومات النموذج
+            function updateModelInfo(type) {
+                const info = modelsInfo[type] || modelsInfo.brain;
+                modelTitle.textContent = info.title;
+                modelDescription.textContent = info.description;
+            }
+            
+            // معالجة تغيير حجم النافذة
+            function onWindowResize() {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+            }
+            
+            // متغيرات التحكم في التحريك
+            let animationFrameId = null;
+            let lastTime = 0;
+            
+            // دورة التحريك
+            function animate(currentTime = 0) {
+                try {
+                    if (!lastTime) lastTime = currentTime;
+                    const deltaTime = (currentTime - lastTime) / 1000; // الوقت المنقضي بالثواني
+                    lastTime = currentTime;
+                    
+                    // طلب الإطار التالي
+                    animationFrameId = requestAnimationFrame(animate);
+                    
+                    // تدوير النموذج إذا كان التدوير مفعلاً
+                    if (isRotating && model) {
+                        model.rotation.y += 0.5 * deltaTime * rotationSpeed;
+                    }
+                    
+                    // تحديث عناصر التحكم
+                    if (controls) {
+                        controls.update();
+                    }
+                    
+                    // تحديث الجسيمات إذا كان هناك تحديث مطلوب
+                    if (updateParticles) {
+                        updateParticles(currentTime);
+                    }
+                    
+                    // تحديث العارض
+                    if (renderer && scene && camera) {
+                        renderer.render(scene, camera);
+                    }
+                    
+                } catch (error) {
+                    console.error('حدث خطأ في حلقة التحريك:', error);
+                    // إيقاف التحريك في حالة حدوث خطأ
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
+                }
+            }
+            
+            // تنظيف الموارد عند إغلاق الصفحة
+            window.addEventListener('beforeunload', function() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                
+                // تنظيف المشهد
+                if (scene) {
+                    while(scene.children.length > 0) { 
+                        const object = scene.children[0];
+                        if (object.geometry) object.geometry.dispose();
+                        if (object.material) {
+                            if (Array.isArray(object.material)) {
+                                object.material.forEach(material => material.dispose());
+                            } else {
+                                object.material.dispose();
+                            }
+                        }
+                        scene.remove(object);
+                    }
+                }
+                
+                // تنظيف العارض
+                if (renderer) {
+                    renderer.dispose();
+                }
+            });
+            
+            // معالجة تغيير نوع النموذج
+            modelType.addEventListener('change', function() {
+                currentModel = this.value;
+                createModel(currentModel);
+            });
+            
+            // معالجة تغيير سرعة الدوران
+            rotationSpeedInput.addEventListener('input', function() {
+                rotationSpeed = parseFloat(this.value);
+            });
+            
+            // معالجة تغيير حجم النموذج
+            modelScale.addEventListener('input', function() {
+                const scale = parseFloat(this.value);
+                if (model) {
+                    model.scale.set(scale, scale, scale);
+                }
+            });
+            
+            // معالجة تغيير اللون
+            colorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // إزالة التحديد من جميع الأزرار
+                    colorButtons.forEach(btn => {
+                        btn.style.transform = 'scale(1)';
+                        btn.style.border = '2px solid ' + btn.dataset.color;
+                    });
+                    
+                    // تحديد الزر المحدد
+                    this.style.transform = 'scale(1.2)';
+                    this.style.border = '2px solid white';
+                    
+                    // تحديث لون النموذج
+                    currentColor = new THREE.Color(this.dataset.color);
+                    
+                    if (model) {
+                        if (model.material) {
+                            // تحديث المادة إذا كانت موجودة
+                            model.material.color.set(currentColor);
+                            model.material.emissive.set(currentColor);
+                        } else if (model.children && model.children.length > 0) {
+                            // تحديث جميع المواد في المجموعة
+                            model.traverse(child => {
+                                if (child.material) {
+                                    child.material.color.set(currentColor);
+                                    if (child.material.emissive) {
+                                        child.material.emissive.set(currentColor);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+            
+            // معالجة زر التشغيل/الإيقاف
+            playButton.addEventListener('click', function() {
+                isRotating = !isRotating;
+                const icon = this.querySelector('i');
+                
+                if (isRotating) {
+                    icon.className = 'fas fa-pause';
+                    this.innerHTML = '<i class="fas fa-pause"></i> إيقاف';
+                } else {
+                    icon.className = 'fas fa-play';
+                    this.innerHTML = '<i class="fas fa-play"></i> تشغيل';
+                }
+            });
+            
+            // معالجة زر إعادة الضبط
+            resetButton.addEventListener('click', function() {
+                if (controls) {
+                    controls.reset();
+                }
+                
+                // إعادة تعيين السرعة والحجم
+                rotationSpeedInput.value = '0.005';
+                rotationSpeed = 0.005;
+                
+                modelScale.value = '1';
+                if (model) {
+                    model.scale.set(1, 1, 1);
+                }
+                
+                // إعادة تعيين اللون إلى الافتراضي
+                const defaultColorBtn = document.querySelector('.color-btn[data-color="#00f7ff"]');
+                if (defaultColorBtn) {
+                    defaultColorBtn.click();
+                }
+                
+                // تفعيل الدوران
+                isRotating = true;
+                playButton.innerHTML = '<i class="fas fa-pause"></i> إيقاف';
+            });
+            
+            // بدء المشهد ثلاثي الأبعاد
+            init3DScene();
+            
+            // تحديد الزر الافتراضي للون
+            document.querySelector('.color-btn[data-color="#00f7ff"]').click();
+        });
+    </script>
+    
+    <!-- قسم التفاعل ثلاثي الأبعاد -->
+    <section id="start" class="interactive-3d-section" style="padding: 80px 5%; background: var(--darker-bg); min-height: 100vh; position: relative; overflow: hidden;">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; position: relative; z-index: 2;">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem; color: var(--primary-color);">استكشف الذكاء الاصطناعي بشكل تفاعلي</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; align-items: center;">
+                <div class="controls-panel" style="background: rgba(10, 20, 30, 0.7); padding: 2rem; border-radius: 15px; border: 1px solid rgba(0, 247, 255, 0.2); backdrop-filter: blur(10px);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.5rem;">أدوات التحكم</h3>
+                    
+                    <div class="control-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">نوع النموذج</label>
+                        <select id="model-type" class="custom-select" style="width: 100%; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 247, 255, 0.3); border-radius: 8px; color: var(--text-color); font-size: 1rem;">
+                            <option value="brain">نموذج الدماغ</option>
+                            <option value="neural">الشبكة العصبية</option>
+                            <option value="particles">الجسيمات الذكية</option>
+                            <option value="dna">الحمض النووي الرقمي</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">سرعة الدوران</label>
+                        <input type="range" id="rotation-speed" min="0" max="0.02" step="0.001" value="0.005" style="width: 100%;">
+                    </div>
+                    
+                    <div class="control-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">حجم النموذج</label>
+                        <input type="range" id="model-scale" min="0.5" max="2" step="0.1" value="1" style="width: 100%;">
+                    </div>
+                    
+                    <div class="color-picker" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color);">لون النموذج</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button data-color="#00f7ff" class="color-btn" style="background: #00f7ff; border: 2px solid #00f7ff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: transform 0.2s;"></button>
+                            <button data-color="#ff4d8d" class="color-btn" style="background: #ff4d8d; border: 2px solid #ff4d8d; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: transform 0.2s;"></button>
+                            <button data-color="#6c63ff" class="color-btn" style="background: #6c63ff; border: 2px solid #6c63ff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: transform 0.2s;"></button>
+                            <button data-color="#4caf50" class="color-btn" style="background: #4caf50; border: 2px solid #4caf50; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: transform 0.2s;"></button>
+                            <button data-color="#ff9800" class="color-btn" style="background: #ff9800; border: 2px solid #ff9800; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: transform 0.2s;"></button>
+                        </div>
+                    </div>
+                    
+                    <div class="animation-controls" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button id="play-btn" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fas fa-play"></i> تشغيل
+                        </button>
+                        <button id="reset-btn" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fas fa-redo"></i> إعادة ضبط
+                        </button>
+                </div>
+                
+                <div class="model-container" style="position: relative; height: 600px; background: rgba(0, 0, 0, 0.2); border-radius: 15px; overflow: hidden; border: 1px solid rgba(0, 247, 255, 0.2);">
+                    <canvas id="interactive-3d" style="width: 100%; height: 100%; display: block;"></canvas>
+                    <div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0e17; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-size: 1.2rem; z-index: 1000; transition: opacity 0.5s ease;">
+        <div class="spinner" style="width: 60px; height: 60px; border: 5px solid rgba(0, 247, 255, 0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
+        <h2 style="color: var(--primary-color); margin-bottom: 1rem;">جاري التحميل</h2>
+        <p>جاري تحميل النموذج ثلاثي الأبعاد...</p>
+    </div>
+    
+    <div id="loading-model" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-size: 1.2rem; z-index: 10; display: none;">
+        <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(0, 247, 255, 0.3); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; margin-bottom: 1rem;"></div>
+        <p>جاري تحميل النموذج...</p>
+    </div>                </div>
+                </div>
+            </div>
+            
+            <div class="model-info" style="margin-top: 3rem; background: rgba(0, 0, 0, 0.3); padding: 1.5rem; border-radius: 10px; border-right: 3px solid var(--primary-color);">
+                <h3 id="model-title" style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.3rem;">نموذج الدماغ الاصطناعي</h3>
+                <p id="model-description" style="color: var(--text-color); line-height: 1.7;">
+                    هذا النموذج يمثل بنية الدماغ البشري الرقمي، حيث تظهر الخلايا العصبية المتصالة التي تشكل الشبكة العصبية الاصطناعية. يمكنك تدوير النموذج وسحبه وتكبيره للاستكشاف.
+                </p>
+            </div>
+        </div>
+        
+        <!-- تأثيرات الخلفية -->
+        <div class="floating-elements" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
+            <div class="floating-element" style="width: 400px; height: 400px; background: var(--primary-color); top: 10%; right: 10%; animation: float 15s infinite ease-in-out; opacity: 0.05; filter: blur(60px);"></div>
+            <div class="floating-element" style="width: 300px; height: 300px; background: var(--secondary-color); bottom: 10%; left: 10%; animation: float 18s infinite ease-in-out reverse; animation-delay: 2s; opacity: 0.05; filter: blur(50px);"></div>
+            <div class="floating-element" style="width: 200px; height: 200px; background: var(--accent-color); top: 50%; left: 20%; animation: float 20s infinite ease-in-out; animation-delay: 4s; opacity: 0.05; filter: blur(40px);"></div>
+        </div>
+    </section>
+    
+    <!-- قسم استكشف -->
+    <section id="explore" class="explore-section" style="padding: 80px 5%; background: var(--darker-bg); position: relative; overflow: hidden;">
+        <div class="floating-elements">
+            <div class="floating-element" style="width: 300px; height: 300px; background: var(--accent-color); top: 20%; left: 10%; animation-delay: 0s; animation-duration: 20s;"></div>
+            <div class="floating-element" style="width: 200px; height: 200px; background: var(--primary-color); bottom: 20%; right: 10%; animation-delay: 2s; animation-duration: 25s;"></div>
+        </div>
+        
+        <div class="container" style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;">
+            <div class="section-header" style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; position: relative; display: inline-block;">
+                    <i class="fas fa-compass" style="margin-left: 15px;"></i>استكشف عالم الذكاء الاصطناعي
+                </h2>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
+                    انطلق في رحلة تفاعلية لاكتشاف أحدث التطورات والتقنيات في عالم الذكاء الاصطناعي
+                </p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px;">
+                <!-- بطاقة استكشاف 1 -->
+                <div class="explore-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; padding: 30px; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.4s ease; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
+                    <div class="card-icon" style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 1.8rem; color: white;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 15px; font-size: 1.5rem;">نماذج الذكاء الاصطناعي</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; line-height: 1.7;">
+                        اكتشف أحدث النماذج المتقدمة في معالجة اللغات الطبيعية والرؤية الحاسوبية.
+                    </p>
+                    <a href="#" class="explore-btn" style="display: inline-flex; align-items: center; color: var(--primary-color); text-decoration: none; font-weight: 500; margin-top: 15px;">
+                        اقرأ المزيد
+                        <i class="fas fa-arrow-left" style="margin-right: 8px; transition: transform 0.3s ease;"></i>
+                    </a>
+                    <div class="card-hover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0, 247, 255, 0.1), rgba(108, 99, 255, 0.1)); z-index: -1; opacity: 0; transition: opacity 0.3s ease;"></div>
+                </div>
+                
+                <!-- بطاقة استكشاف 2 -->
+                <div class="explore-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; padding: 30px; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.4s ease; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
+                    <div class="card-icon" style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--accent-color), #ff6b6b); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 1.8rem; color: white;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.5rem;">الروبوتات الذكية</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; line-height: 1.7;">
+                        تعرف على أحدث التطورات في مجال الروبوتات الذكية وتطبيقاتها في الحياة اليومية.
+                    </p>
+                    <a href="#" class="explore-btn" style="display: inline-flex; align-items: center; color: var(--accent-color); text-decoration: none; font-weight: 500; margin-top: 15px;">
+                        اقرأ المزيد
+                        <i class="fas fa-arrow-left" style="margin-right: 8px; transition: transform 0.3s ease;"></i>
+                    </a>
+                    <div class="card-hover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255, 77, 141, 0.1), rgba(255, 107, 107, 0.1)); z-index: -1; opacity: 0; transition: opacity 0.3s ease;"></div>
+                </div>
+                
+                <!-- بطاقة استكشاف 3 -->
+                <div class="explore-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; padding: 30px; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.4s ease; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
+                    <div class="card-icon" style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--secondary-color), #9f7aea); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 1.8rem; color: white;">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3 style="color: var(--secondary-color); margin-bottom: 15px; font-size: 1.5rem;">عتاد الذكاء الاصطناعي</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; line-height: 1.7;">
+                        استكشف أحدث المعالجات والشرائح المخصصة لتسريع عمليات الذكاء الاصطناعي.
+                    </p>
+                    <a href="#" class="explore-btn" style="display: inline-flex; align-items: center; color: var(--secondary-color); text-decoration: none; font-weight: 500; margin-top: 15px;">
+                        اقرأ المزيد
+                        <i class="fas fa-arrow-left" style="margin-right: 8px; transition: transform 0.3s ease;"></i>
+                    </a>
+                    <div class="card-hover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(159, 122, 234, 0.1)); z-index: -1; opacity: 0; transition: opacity 0.3s ease;"></div>
+                </div>
+            </div>
+            
+            <!-- معرض تفاعلي -->
+            <div style="margin-top: 70px; text-align: center;">
+                <h3 style="font-size: 1.8rem; color: white; margin-bottom: 30px; position: relative; display: inline-block; padding-bottom: 15px;">
+                    معرض المشاريع التفاعلية
+                    <span style="position: absolute; bottom: 0; right: 0; width: 50px; height: 3px; background: linear-gradient(90deg, var(--primary-color), transparent);"></span>
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-top: 40px;">
+                    <!-- مشروع 1 -->
+                    <div class="project-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; overflow: hidden; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.3s ease; position: relative;">
+                        <div class="project-image" style="height: 180px; background: linear-gradient(45deg, #1e3a8a, #1e40af); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="project-content" style="padding: 20px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 10px; font-size: 1.2rem;">روبوت المحادثة الذكي</h4>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 15px;">نموذج ذكاء اصطناعي متقدم للدردشة والرد على الاستفسارات</p>
+                            <a href="#" class="project-link" style="display: inline-flex; align-items: center; color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                                تجربة المشروع
+                                <i class="fas fa-external-link-alt" style="margin-right: 8px; font-size: 0.8rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- مشروع 2 -->
+                    <div class="project-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; overflow: hidden; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.3s ease; position: relative;">
+                        <div class="project-image" style="height: 180px; background: linear-gradient(45deg, #7e22ce, #a855f7); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="project-content" style="padding: 20px;">
+                            <h4 style="color: var(--secondary-color); margin-bottom: 10px; font-size: 1.2rem;">مولد الصور بالذكاء الاصطناعي</h4>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 15px;">أنشئ لوحات فنية فريدة باستخدام الذكاء الاصطناعي</p>
+                            <a href="#" class="project-link" style="display: inline-flex; align-items: center; color: var(--secondary-color); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                                تجربة المشروع
+                                <i class="fas fa-external-link-alt" style="margin-right: 8px; font-size: 0.8rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- مشروع 3 -->
+                    <div class="project-card" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; overflow: hidden; border: 1px solid rgba(0, 247, 255, 0.2); transition: all 0.3s ease; position: relative;">
+                        <div class="project-image" style="height: 180px; background: linear-gradient(45deg, #dc2626, #ef4444); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="project-content" style="padding: 20px;">
+                            <h4 style="color: #ef4444; margin-bottom: 10px; font-size: 1.2rem;">تأليف الموسيقى بالذكاء الاصطناعي</h4>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 15px;">اصنع مقطوعات موسيقية فريدة باستخدام خوارزميات الذكاء الاصطناعي</p>
+                            <a href="#" class="project-link" style="display: inline-flex; align-items: center; color: #ef4444; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                                تجربة المشروع
+                                <i class="fas fa-external-link-alt" style="margin-right: 8px; font-size: 0.8rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <style>
+        /* تأثيرات تفاعلية لبطاقات الاستكشاف */
+        .explore-card {
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .explore-card.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .explore-card:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        .explore-card:hover .card-hover {
+            opacity: 1 !important;
+        }
+        
+        .explore-btn:hover i {
+            transform: translateX(-5px) !important;
+        }
+        
+        .project-card {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        
+        .project-card.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.02) !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+            border-color: var(--primary-color) !important;
+        }
+    </style>
+    
+    <script>
+        // كشف العناصر عند التمرير
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        if (entry.target.classList.contains('explore-card') || entry.target.classList.contains('project-card')) {
+                            observer.unobserve(entry.target);
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            // مراقبة بطاقات الاستكشاف
+            document.querySelectorAll('.explore-card').forEach((card, index) => {
+                card.style.transitionDelay = `${index * 0.1}s`;
+                observer.observe(card);
+            });
+            
+            // مراقبة بطاقات المشاريع
+            document.querySelectorAll('.project-card').forEach((card, index) => {
+                card.style.transitionDelay = `${index * 0.15}s`;
+                observer.observe(card);
+            });
+            
+            // تأثير التمرير السلس للروابط الداخلية
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <!-- قسم تعلم المزيد عن الذكاء الاصطناعي -->
+    <section id="learn" class="learn-section" style="padding: 80px 5%; background: var(--dark-bg);">
+        <div class="container" style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem; color: var(--primary-color);">اكتشف عالم الذكاء الاصطناعي</h2>
+            
+            <div class="ai-info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- ما هو الذكاء الاصطناعي -->
+                <div class="info-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 2rem; border: 1px solid rgba(0, 247, 255, 0.1); transition: var(--transition);">
+                    <div class="icon" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1.5rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-color);">ما هو الذكاء الاصطناعي؟</h3>
+                    <p style="line-height: 1.8; color: var(--text-color);">
+                        الذكاء الاصطناعي هو فرع من فروع علوم الحاسوب يهتم بتطوير أنظمة قادرة على أداء مهام تتطلب عادةً ذكاءً بشرياً مثل التعلم، التفكير المنطقي، حل المشكلات، الإدراك، وفهم اللغة الطبيعية.
+                    </p>
+                </div>
+                
+                <!-- أنواع الذكاء الاصطناعي -->
+                <div class="info-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 2rem; border: 1px solid rgba(0, 247, 255, 0.1); transition: var(--transition);">
+                    <div class="icon" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1.5rem;">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-color);">أنواع الذكاء الاصطناعي</h3>
+                    <ul style="list-style: none; padding-right: 0; line-height: 2;">
+                        <li><i class="fas fa-robot" style="color: var(--primary-color); margin-left: 8px;"></i>الذكاء الاصطناعي الضيق (ANI)</li>
+                        <li><i class="fas fa-robot" style="color: var(--primary-color); margin-left: 8px;"></i>الذكاء العام الاصطناعي (AGI)</li>
+                        <li><i class="fas fa-robot" style="color: var(--primary-color); margin-left: 8px;"></i>الذكاء الفائق (ASI)</li>
+                    </ul>
+                </div>
+                
+                <!-- تطبيقات الذكاء الاصطناعي -->
+                <div class="info-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 2rem; border: 1px solid rgba(0, 247, 255, 0.1); transition: var(--transition);">
+                    <div class="icon" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1.5rem;">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-color);">تطبيقات الذكاء الاصطناعي</h3>
+                    <ul style="list-style: none; padding-right: 0; line-height: 2;">
+                        <li><i class="fas fa-check" style="color: var(--primary-color); margin-left: 8px;"></i>المساعدات الذكية (مثل Siri، Google Assistant)</li>
+                        <li><i class="fas fa-check" style="color: var(--primary-color); margin-left: 8px;"></i>المركبات ذاتية القيادة</li>
+                        <li><i class="fas fa-check" style="color: var(--primary-color); margin-left: 8px;"></i>التشخيص الطبي الدقيق</li>
+                        <li><i class="fas fa-check" style="color: var(--primary-color); margin-left: 8px;"></i>الترجمة الفورية</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- تعلم الآلة والتعلم العميق -->
+            <div class="machine-learning" style="margin-top: 4rem; background: rgba(0, 247, 255, 0.05); border-radius: 12px; padding: 2.5rem; border: 1px solid rgba(0, 247, 255, 0.1);">
+                <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--primary-color); text-align: center;">تعلم الآلة والتعلم العميق</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h4 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.3rem;">
+                            <i class="fas fa-robot" style="margin-left: 8px;"></i>تعلم الآلة (Machine Learning)
+                        </h4>
+                        <p style="line-height: 1.8; margin-bottom: 1.5rem;">
+                            فرع من الذكاء الاصطناعي يركز على تطوير أنظمة تتعلم من البيانات وتحسن أداءها تلقائيًا من خلال التجربة.
+                        </p>
+                        <ul style="list-style: none; padding-right: 0; line-height: 2;">
+                            <li><i class="fas fa-arrow-left" style="color: var(--primary-color); margin-left: 8px;"></i>التعلم الموجّه (Supervised Learning)</li>
+                            <li><i class="fas fa-arrow-left" style="color: var(--primary-color); margin-left: 8px;"></i>التعلم غير الموجّه (Unsupervised Learning)</li>
+                            <li><i class="fas fa-arrow-left" style="color: var(--primary-color); margin-left: 8px;"></i>التعلم المعزز (Reinforcement Learning)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.3rem;">
+                            <i class="fas fa-network-wired" style="margin-left: 8px;"></i>التعلم العميق (Deep Learning)
+                        </h4>
+                        <p style="line-height: 1.8; margin-bottom: 1.5rem;">
+                            نوع متقدم من تعلم الآلة يستخدم شبكات عصبية صناعية متعددة الطبقات لمحاكاة الطريقة التي يعمل بها دماغ الإنسان.
+                        </p>
+                        <ul style="list-style: none; padding-right: 0; line-height: 2;">
+                            <li><i class="fas fa-layer-group" style="color: var(--primary-color); margin-left: 8px;"></i>الشبكات العصبية التلافيفية (CNNs)</li>
+                            <li><i class="fas fa-exchange-alt" style="color: var(--primary-color); margin-left: 8px;"></i>الشبكات العصبية المتكررة (RNNs)</li>
+                            <li><i class="fas fa-brain" style="color: var(--primary-color); margin-left: 8px;"></i>الشبكات العصبية التوليدية (GANs)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- مستقبل الذكاء الاصطناعي -->
+            <div class="future-ai" style="margin-top: 4rem; text-align: center;">
+                <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--primary-color);">مستقبل الذكاء الاصطناعي</h3>
+                <p style="max-width: 800px; margin: 0 auto 2rem; line-height: 1.8; font-size: 1.1rem;">
+                    يشهد عالم الذكاء الاصطناعي تطورًا سريعًا ومستمرًا، ويتوقع الخبراء أن يشهد المستقبل القريب تطورات مذهلة في مجالات مثل:
+                </p>
+                <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem;">
+                    <div style="background: rgba(0, 247, 255, 0.05); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(0, 247, 255, 0.1); min-width: 200px;">
+                        <i class="fas fa-heartbeat" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem; display: block;"></i>
+                        <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">الرعاية الصحية</h4>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">تشخيص دقيق وأدوية مخصصة</p>
+                    </div>
+                    <div style="background: rgba(0, 247, 255, 0.05); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(0, 247, 255, 0.1); min-width: 200px;">
+                        <i class="fas fa-car" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem; display: block;"></i>
+                        <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">المواصلات</h4>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">مركبات ذاتية القيادة</p>
+                    </div>
+                    <div style="background: rgba(0, 247, 255, 0.05); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(0, 247, 255, 0.1); min-width: 200px;">
+                        <i class="fas fa-graduation-cap" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem; display: block;"></i>
+                        <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">التعليم</h4>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">تعلم مخصص لكل طالب</p>
+                    </div>
+                    <div style="background: rgba(0, 247, 255, 0.05); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(0, 247, 255, 0.1); min-width: 200px;">
+                        <i class="fas fa-industry" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem; display: block;"></i>
+                        <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">الصناعة</h4>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">مصانع ذكية وأتمتة متقدمة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- قسم اتصل بنا -->
+    <section id="contact" class="contact-section" style="padding: 80px 5%; background: var(--dark-bg); position: relative; overflow: hidden;">
+        <div class="floating-elements">
+            <div class="floating-element" style="width: 200px; height: 200px; background: var(--primary-color); top: 30%; left: 15%; animation-delay: 1s; animation-duration: 20s;"></div>
+            <div class="floating-element" style="width: 300px; height: 300px; background: var(--accent-color); bottom: 20%; right: 10%; animation-delay: 3s; animation-duration: 25s;"></div>
+        </div>
+        
+        <div class="container" style="max-width: 800px; margin: 0 auto; position: relative; z-index: 2; text-align: center;">
+            <div class="section-header" style="margin-bottom: 40px;">
+                <h2 style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; position: relative; display: inline-block;">
+                    <i class="fas fa-envelope" style="margin-left: 15px;"></i>اتصل بنا
+                </h2>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem; margin-top: 15px;">
+                    للاستفسارات أو لمزيد من المعلومات، يرجى التواصل معنا عبر:
+                </p>
+            </div>
+            
+            <div class="contact-email" style="background: rgba(20, 20, 40, 0.6); border-radius: 15px; padding: 30px; border: 1px solid rgba(0, 247, 255, 0.2); backdrop-filter: blur(10px); display: inline-block; transition: all 0.3s ease;">
+                <a href="mailto:mcharymop138@gmail.com" style="color: var(--accent-color); font-size: 1.4rem; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; transition: all 0.3s ease;">
+                    <i class="fas fa-envelope" style="margin-left: 10px;"></i>
+                    mcharymop138@gmail.com
+                </a>
+            </div>
+            
+
+        </div>
+        
+        <style>
+            .contact-email:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                border-color: var(--primary-color);
+            }
+            
+            .contact-email a:hover {
+                color: var(--primary-color) !important;
+            }
+            
+            .social-links a:hover {
+                background: var(--accent-color) !important;
+                transform: translateY(-5px);
+                border-color: transparent !important;
+            }
+            
+            @media (max-width: 768px) {
+                .contact-email a {
+                    font-size: 1.2rem !important;
+                }
+                
+                .social-links a {
+                    width: 45px !important;
+                    height: 45px !important;
+                    font-size: 1.1rem !important;
+                }
+            }
+        </style>
+    </section>
+    
+    <!-- تذييل الصفحة -->
+    <footer style="background: #050510; padding: 2rem 5%; text-align: center; border-top: 1px solid rgba(0, 247, 255, 0.1);">
+        <p style="color: var(--text-color); opacity: 0.7;">© 2024 جميع الحقوق محفوظة</p>
+    </footer>
+</body>
+</html>

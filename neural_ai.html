@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استكشاف الذكاء الاصطناعي العصبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #23243a 0%, #0a0a1a 100%);
+            color: #e0e0e0;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .header {
+            text-align: center;
+            padding: 60px 20px 30px 20px;
+        }
+        .header h1 {
+            font-size: 2.8rem;
+            color: #00f7ff;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.25rem;
+            color: #bdbdbd;
+        }
+        .explore-section {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgba(30,40,60,0.7);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.20);
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .explore-section h2 {
+            color: #6c63ff;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        .explore-card {
+            background: rgba(10, 30, 60, 0.5);
+            border-radius: 14px;
+            margin-bottom: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #00f7ff22;
+            position: relative;
+        }
+        .explore-card:hover {
+            transform: translateY(-7px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(0,247,255,0.10);
+            border-color: #00f7ff;
+        }
+        .explore-card h3 {
+            color: #00f7ff;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+        .explore-card p {
+            color: #e0e0e0;
+            font-size: 1.05rem;
+        }
+        .neural-animation {
+            width: 100%;
+            height: 220px;
+            background: transparent;
+            margin-bottom: 35px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin: 25px 0 0 0;
+            padding: 10px 30px;
+            border-radius: 30px;
+            background: #00f7ff;
+            color: #23243a;
+            border: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-decoration: none;
+            box-shadow: 0 2px 12px rgba(0,247,255,0.08);
+            transition: background 0.2s, color 0.2s;
+        }
+        .back-btn:hover {
+            background: #6c63ff;
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            .explore-section { padding: 18px 5px; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-brain"></i> استكشاف الذكاء الاصطناعي العصبي</h1>
+        <p>تعرف على أحدث الاستكشافات والتقنيات في عالم الشبكات العصبية والذكاء الاصطناعي العصبي.</p>
+    </div>
+    <div class="explore-section">
+        <div class="neural-animation" id="neural-canvas"></div>
+        <h2>استكشافات مبهرة</h2>
+        <div class="explore-card">
+    <h3><i class="fas fa-project-diagram"></i> الشبكات العصبية العميقة</h3>
+    <p>الشبكات العصبية العميقة أحدثت ثورة في معالجة الصور والنصوص، وتستخدم في تطبيقات مثل الترجمة الآلية والتعرف على الصوت.</p>
+    <div style="background: #23243a; border-radius: 10px; padding: 10px 16px; margin-top: 10px; color: #bdbdbd; font-size: 0.98rem;">
+        <b>شرح علمي:</b> تتكون الشبكات العصبية العميقة من طبقات متعددة من الخلايا العصبية الاصطناعية، ما يسمح لها باكتشاف الأنماط المعقدة في البيانات وتحقيق أداء فائق في مجالات مثل الرؤية الحاسوبية ومعالجة اللغة الطبيعية.
+    </div>
+</div>
+        <div class="explore-card">
+    <h3><i class="fas fa-brain"></i> التعلم المعزز العصبي</h3>
+    <p>يجمع بين الذكاء الاصطناعي العصبي وتقنيات التعلم المعزز لتطوير أنظمة تتعلم من التجربة وتحسن الأداء ذاتياً.</p>
+    <div style="background: #23243a; border-radius: 10px; padding: 10px 16px; margin-top: 10px; color: #bdbdbd; font-size: 0.98rem;">
+        <b>شرح علمي:</b> التعلم المعزز العصبي يدمج الشبكات العصبية مع خوارزميات التعلم المعزز، حيث تتعلم الأنظمة من خلال التجربة والتفاعل مع البيئة لتحقيق أفضل النتائج عبر التجربة والخطأ.
+    </div>
+</div>
+        <div class="explore-card">
+    <h3><i class="fas fa-network-wired"></i> الشبكات التوليدية (GANs)</h3>
+    <p>تستخدم لإنشاء صور ونصوص جديدة واقعية، وتلعب دوراً كبيراً في الإبداع الاصطناعي والفن الرقمي.</p>
+    <div style="background: #23243a; border-radius: 10px; padding: 10px 16px; margin-top: 10px; color: #bdbdbd; font-size: 0.98rem;">
+        <b>شرح علمي:</b> تتكون الشبكات التوليدية من نموذجين متنافسين (مولد ومميز)، حيث يحاول المولد إنتاج بيانات جديدة بينما يحاول المميز التمييز بينها وبين البيانات الحقيقية، مما يؤدي إلى نتائج واقعية للغاية.
+    </div>
+</div>
+        <div style="display: flex; gap: 12px; margin-top: 30px; justify-content: flex-start;">
+    <!-- زر العودة للرئيسية -->
+    <a href="/" class="back-btn"><i class="fas fa-home"></i> الرئيسية</a>
+    <!-- زر للعودة لصفحة الاستكشاف العام -->
+    <a href="/index_new" class="back-btn" style="background: #6c63ff;"><i class="fas fa-compass"></i> استكشاف عام</a>
+</div>
+</div>
+<!-- قسم تفاعلي: محاكاة شبكة عصبية صغيرة -->
+<div class="explore-section" style="max-width: 700px; margin: 40px auto 0; background: rgba(20,30,60,0.6); border-radius: 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.15); padding: 30px 18px;">
+    <h3 style="color: #00f7ff; text-align: center; margin-bottom: 18px;">محاكاة شبكة عصبية مبسطة</h3>
+    <div id="mini-neural" style="display: flex; justify-content: center; align-items: center; gap: 40px;">
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+            <button onclick="activateNeuron(0)" style="width: 50px; height: 50px; border-radius: 50%; background: #00f7ff; border: none; color: #23243a; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: background 0.2s;">1</button>
+            <button onclick="activateNeuron(1)" style="width: 50px; height: 50px; border-radius: 50%; background: #6c63ff; border: none; color: #fff; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: background 0.2s;">2</button>
+            <button onclick="activateNeuron(2)" style="width: 50px; height: 50px; border-radius: 50%; background: #ff4d8d; border: none; color: #fff; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: background 0.2s;">3</button>
+        </div>
+        <svg id="mini-svg" width="180" height="120" viewBox="0 0 180 120">
+            <line x1="60" y1="30" x2="120" y2="60" stroke="#00f7ff" stroke-width="4" id="l0"/>
+            <line x1="60" y1="60" x2="120" y2="60" stroke="#6c63ff" stroke-width="4" id="l1"/>
+            <line x1="60" y1="90" x2="120" y2="60" stroke="#ff4d8d" stroke-width="4" id="l2"/>
+            <circle cx="60" cy="30" r="14" fill="#00f7ff" fill-opacity="0.8"/>
+            <circle cx="60" cy="60" r="14" fill="#6c63ff" fill-opacity="0.8"/>
+            <circle cx="60" cy="90" r="14" fill="#ff4d8d" fill-opacity="0.8"/>
+            <circle cx="120" cy="60" r="18" fill="#fff" fill-opacity="0.9"/>
+        </svg>
+    </div>
+    <p style="text-align: center; color: #bdbdbd; margin-top: 18px; font-size: 1.1rem;">اضغط على أي خلية عصبية لرؤية كيفية انتقال الإشارة إلى الخلية التالية.</p>
+</div>
+<script>
+// رسم شبكة عصبية متحركة (سيمبل أنيميشن SVG)
+const canvas = document.getElementById('neural-canvas');
+canvas.innerHTML = `<svg width="100%" height="220" viewBox="0 0 600 220">
+    <g id="lines">
+        <line x1="100" y1="40" x2="300" y2="110" stroke="#00f7ff" stroke-width="3" opacity="0.5"/>
+        <line x1="100" y1="110" x2="300" y2="110" stroke="#6c63ff" stroke-width="3" opacity="0.5"/>
+        <line x1="100" y1="180" x2="300" y2="110" stroke="#ff4d8d" stroke-width="3" opacity="0.5"/>
+        <line x1="300" y1="110" x2="500" y2="60" stroke="#00f7ff" stroke-width="3" opacity="0.5"/>
+        <line x1="300" y1="110" x2="500" y2="110" stroke="#6c63ff" stroke-width="3" opacity="0.5"/>
+        <line x1="300" y1="110" x2="500" y2="170" stroke="#ff4d8d" stroke-width="3" opacity="0.5"/>
+    </g>
+    <g id="nodes">
+        <circle cx="100" cy="40" r="18" fill="#00f7ff" fill-opacity="0.8">
+            <animate attributeName="cy" values="40;60;40" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="110" r="18" fill="#6c63ff" fill-opacity="0.8">
+            <animate attributeName="cy" values="110;130;110" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="180" r="18" fill="#ff4d8d" fill-opacity="0.8">
+            <animate attributeName="cy" values="180;160;180" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="300" cy="110" r="22" fill="#fff" fill-opacity="0.9"/>
+        <circle cx="500" cy="60" r="18" fill="#00f7ff" fill-opacity="0.8">
+            <animate attributeName="cy" values="60;80;60" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="500" cy="110" r="18" fill="#6c63ff" fill-opacity="0.8">
+            <animate attributeName="cy" values="110;90;110" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="500" cy="170" r="18" fill="#ff4d8d" fill-opacity="0.8">
+            <animate attributeName="cy" values="170;150;170" dur="2s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+</svg>`;
+// تفعيل خطوط الشبكة المصغرة
+function activateNeuron(idx) {
+    for (let i = 0; i < 3; i++) {
+        document.getElementById('l'+i).setAttribute('stroke-opacity', '0.3');
+        document.getElementById('l'+i).setAttribute('stroke-width', '4');
+    }
+    document.getElementById('l'+idx).setAttribute('stroke-opacity', '1');
+    document.getElementById('l'+idx).setAttribute('stroke-width', '8');
+    setTimeout(() => {
+        document.getElementById('l'+idx).setAttribute('stroke-opacity', '0.3');
+        document.getElementById('l'+idx).setAttribute('stroke-width', '4');
+    }, 600);
+}
+</script>
+</body>
+</html>
